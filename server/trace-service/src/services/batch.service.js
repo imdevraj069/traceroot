@@ -3,6 +3,9 @@ import QualityMetric from '../models/qualityMetric.model.js';
 import StatusHistory from '../models/statusHistory.model.js';
 import ApiError from '../utils/ApiError.js';
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+
+const BLOCKCHAIN_SERVICE_URL = process.env.BLOCKCHAIN_SERVICE_URL || 'http://localhost:8003';
 
 // Valid status transitions
 const VALID_STATUSES = [
@@ -37,6 +40,29 @@ export const createBatch = async (data) => {
         notes: 'Batch created',
         updatedBy: data.createdBy
     });
+
+    // Call blockchain service to record batch on blockchain
+    try {
+        const blockchainResponse = await axios.post(`${BLOCKCHAIN_SERVICE_URL}/api/blockchain/batch`, {
+            batchId: batch.batchId,
+            productName: data.productName,
+            variety: data.variety || '',
+            quantity: data.quantity,
+            unit: data.unit,
+            location: data.origin,
+            harvestDate: data.harvestDate,
+            expiryDate: data.expiryDate,
+            nfcTagId: data.nfcTagId || ''
+        });
+
+        if (blockchainResponse.data?.data?.txHash) {
+            batch.blockchainTxHash = blockchainResponse.data.data.txHash;
+            await batch.save();
+        }
+    } catch (error) {
+        console.error('Blockchain service error:', error.message);
+        // Continue even if blockchain fails - batch is already created in MongoDB
+    }
 
     return batch;
 };
@@ -144,6 +170,24 @@ export const addQualityMetric = async (batchId, data) => {
         });
     }
 
+    // Record quality metric on blockchain
+    try {
+        const blockchainResponse = await axios.post(`${BLOCKCHAIN_SERVICE_URL}/api/blockchain/quality`, {
+            batchId: batch.batchId,
+            metricType: data.metricType,
+            value: data.score || data.value,
+            unit: data.unit || ''
+        });
+
+        if (blockchainResponse.data?.data?.txHash) {
+            metric.blockchainTxHash = blockchainResponse.data.data.txHash;
+            await metric.save();
+        }
+    } catch (error) {
+        console.error('Blockchain quality metric error:', error.message);
+        // Continue even if blockchain fails
+    }
+
     return metric;
 };
 
@@ -163,13 +207,31 @@ export const updateBatchStatus = async (id, { status, location, notes, updatedBy
     await batch.save();
 
     // Record status change
-    await StatusHistory.create({
+    const statusRecord = await StatusHistory.create({
         batchId: batch._id,
         status,
         location,
         notes,
         updatedBy
     });
+
+    // Record status update on blockchain
+    try {
+        const blockchainResponse = await axios.post(`${BLOCKCHAIN_SERVICE_URL}/api/blockchain/status`, {
+            batchId: batch.batchId,
+            status,
+            location: location || '',
+            timestamp: Math.floor(Date.now() / 1000)
+        });
+
+        if (blockchainResponse.data?.data?.txHash) {
+            statusRecord.blockchainTxHash = blockchainResponse.data.data.txHash;
+            await statusRecord.save();
+        }
+    } catch (error) {
+        console.error('Blockchain status update error:', error.message);
+        // Continue even if blockchain fails
+    }
 
     return batch;
 };
