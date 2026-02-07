@@ -147,6 +147,14 @@ export const certifications = {
     },
 };
 
+// Analytics API
+export const analytics = {
+    getStats: async () => {
+        const res = await traceApi.get('/api/analytics/stats');
+        return res.data;
+    }
+};
+
 // Types
 export interface Batch {
     _id: string;

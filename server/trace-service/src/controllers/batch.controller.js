@@ -32,7 +32,7 @@ export const getAllBatches = asyncHandler(async (req, res) => {
 
     // Allow admin, supplier, manufacturer, and distributor to see all batches
     // Other roles only see batches they created
-    const canViewAll = ['admin', 'supplier', 'manufacturer', 'distributor'].includes(req.user.role);
+    const canViewAll = ['admin', 'supplier', 'manufacturer', 'distributor', 'retailer'].includes(req.user.role);
     const userId = canViewAll ? null : req.user.id;
 
     const batches = await batchService.getAllBatches({ page, limit, status, userId });

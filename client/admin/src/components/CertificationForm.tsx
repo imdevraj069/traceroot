@@ -60,7 +60,7 @@ export function CertificationForm({ batchId, isOpen, onClose, onSuccess }: Certi
     const { user } = useAuthStore();
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-    
+
     // Only admin and manufacturer can add certifications
     const canAddCertification = user?.role === 'admin' || user?.role === 'manufacturer';
 
@@ -152,7 +152,7 @@ export function CertificationForm({ batchId, isOpen, onClose, onSuccess }: Certi
                         />
                         <FormField
                             control={form.control}
-                            name="issuingAuthority"
+                            name="issuingBody"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Issuing Authority</FormLabel>
@@ -205,15 +205,15 @@ export function CertificationForm({ batchId, isOpen, onClose, onSuccess }: Certi
                             )}
                         />
                         {message && (
-                        <div className={`flex items-center gap-2 p-3 rounded-md ${message.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                            {message.type === "success" ? (
-                                <CheckCircle className="w-4 h-4" />
-                            ) : (
-                                <AlertCircle className="w-4 h-4" />
-                            )}
-                            <span className="text-sm">{message.text}</span>
-                        </div>
-                    )}
+                            <div className={`flex items-center gap-2 p-3 rounded-md ${message.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                                {message.type === "success" ? (
+                                    <CheckCircle className="w-4 h-4" />
+                                ) : (
+                                    <AlertCircle className="w-4 h-4" />
+                                )}
+                                <span className="text-sm">{message.text}</span>
+                            </div>
+                        )}
 
                         <DialogFooter>
                             <Button type="submit" disabled={isLoading}>

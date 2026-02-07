@@ -10,17 +10,12 @@ import { QualityTrendChart } from '@/components/charts/QualityTrendChart';
 import { RegionalDistribution } from '@/components/charts/RegionalDistribution';
 import { useAuthStore } from '@/store/auth-store';
 import { Loader2 } from 'lucide-react';
-import { batches } from '@/lib/api';
+import { analytics } from '@/lib/api';
 
 export default function Dashboard() {
   const router = useRouter();
   const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
-  const [stats, setStats] = useState({
-    totalBatches: 0,
-    activeBatches: 0,
-    qualityScore: 0,
-    totalUsers: 0,
-  });
+  const [data, setData] = useState<any>(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
@@ -37,24 +32,8 @@ export default function Dashboard() {
     async function fetchStats() {
       if (isAuthenticated) {
         try {
-          const allBatches = await batches.getAll({ limit: 1000 });
-          // Fix: Access data property safely fallback to empty arrays
-          const batchList = allBatches.data?.batches || [];
-          const active = batchList.filter((b: any) => b.status !== 'Completed' && b.status !== 'Cancelled');
-          const qualityScores = batchList
-            .filter((b: any) => b.qualityMetric)
-            .map((b: any) => b.qualityMetric.score);
-
-          const avgQuality = qualityScores.length > 0
-            ? qualityScores.reduce((a: number, b: number) => a + b, 0) / qualityScores.length
-            : 0;
-
-          setStats({
-            totalBatches: allBatches.data?.pagination?.total || 0,
-            activeBatches: active.length,
-            qualityScore: avgQuality,
-            totalUsers: 12, // Mock for now
-          });
+          const stats = await analytics.getStats();
+          setData(stats.data);
         } catch (error) {
           console.error('Failed to fetch stats:', error);
         } finally {
@@ -66,7 +45,7 @@ export default function Dashboard() {
     fetchStats();
   }, [isAuthenticated]);
 
-  if (isLoading) {
+  if (isLoading || loadingStats) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <Loader2 className="h-8 w-8 animate-spin text-green-600" />
@@ -90,30 +69,35 @@ export default function Dashboard() {
             </div>
 
             {/* Stats Cards */}
-            <StatsCards stats={stats} />
+            <StatsCards stats={{
+              totalBatches: data?.totalBatches || 0,
+              activeBatches: data?.activeBatches || 0,
+              qualityScore: data?.averageQuality || 0,
+              totalUsers: data?.totalUsers || 0
+            }} />
 
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Batch Status */}
-              <div className="bg-white p-6 rounded-xl border">
+              <div className="bg-white p-6 rounded-xl border shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Batch Status Distribution</h3>
-                <BatchStatusChart />
+                <BatchStatusChart data={data?.statusDistribution} />
               </div>
 
               {/* Quality Trends */}
-              <div className="bg-white p-6 rounded-xl border">
+              <div className="bg-white p-6 rounded-xl border shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Quality Score Trend</h3>
-                <QualityTrendChart />
+                <QualityTrendChart data={data?.qualityTrends} />
               </div>
 
               {/* Regional Distribution */}
-              <div className="bg-white p-6 rounded-xl border">
+              <div className="bg-white p-6 rounded-xl border shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Regional Distribution</h3>
-                <RegionalDistribution />
+                <RegionalDistribution data={data?.regionalDistribution} />
               </div>
 
               {/* Recent Activity Placeholder */}
-              <div className="bg-white p-6 rounded-xl border">
+              <div className="bg-white p-6 rounded-xl border shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
                 <div className="space-y-4">
                   {[1, 2, 3, 4].map((i) => (

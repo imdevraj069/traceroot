@@ -2,16 +2,14 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const data = [
-    { month: 'Jan', score: 92 },
-    { month: 'Feb', score: 93 },
-    { month: 'Mar', score: 91 },
-    { month: 'Apr', score: 94 },
-    { month: 'May', score: 95 },
-    { month: 'Jun', score: 94 },
-];
+interface QualityTrendChartProps {
+    data?: Array<{ name: string; score: number }>;
+}
 
-export function QualityTrendChart() {
+export function QualityTrendChart({ data = [] }: QualityTrendChartProps) {
+    if (!data.length) {
+        return <div className="h-[300px] w-full flex items-center justify-center text-gray-500">No data available</div>;
+    }
     return (
         <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -21,7 +19,7 @@ export function QualityTrendChart() {
                 >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                     <XAxis
-                        dataKey="month"
+                        dataKey="name"
                         axisLine={false}
                         tickLine={false}
                         tick={{ fill: '#6b7280' }}

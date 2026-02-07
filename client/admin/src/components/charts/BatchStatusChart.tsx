@@ -2,15 +2,16 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
-const data = [
-    { name: 'Created', value: 12, color: '#22c55e' }, // green-500
-    { name: 'Processing', value: 8, color: '#3b82f6' }, // blue-500
-    { name: 'Quality Check', value: 5, color: '#a855f7' }, // purple-500
-    { name: 'In Transit', value: 7, color: '#f97316' }, // orange-500
-    { name: 'Delivered', value: 15, color: '#10b981' }, // emerald-500
-];
+interface BatchStatusChartProps {
+    data?: Array<{ name: string; value: number }>;
+}
 
-export function BatchStatusChart() {
+const COLORS = ['#22c55e', '#3b82f6', '#a855f7', '#f97316', '#10b981', '#ef4444'];
+
+export function BatchStatusChart({ data = [] }: BatchStatusChartProps) {
+    if (!data.length) {
+        return <div className="h-[300px] w-full flex items-center justify-center text-gray-500">No data available</div>;
+    }
     return (
         <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -25,7 +26,7 @@ export function BatchStatusChart() {
                         dataKey="value"
                     >
                         {data.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </Pie>
                     <Tooltip

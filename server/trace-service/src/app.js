@@ -37,6 +37,9 @@ app.use('/api/batches', batchRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/certifications', certificationRoutes);
 
+import analyticsRoutes from './routes/analytics.routes.js';
+app.use('/api/analytics', analyticsRoutes);
+
 // Error handling middleware
 app.use(errorHandler);
 
