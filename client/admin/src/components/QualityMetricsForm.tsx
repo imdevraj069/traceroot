@@ -36,7 +36,7 @@ const formSchema = z.object({
     category: z.string().min(2, {
         message: "Category must be at least 2 characters.",
     }),
-    score: z.coerce.number().min(0).max(100),
+    score: z.number().min(0).max(100),
     status: z.enum(["Pending", "Passed", "Failed"]),
     labName: z.string().optional(),
     testMethod: z.string().optional(),
@@ -68,13 +68,21 @@ export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: Qual
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsLoading(true);
         try {
-            await batches.addQualityMetric(batchId, values);
+            await batches.addQuality(batchId, {
+                metricType: "General Quality",
+                value: values.score,
+                category: values.category,
+                score: values.score,
+                status: values.status,
+                labName: values.labName,
+                testMethod: values.testMethod,
+                reportNumber: values.reportNumber
+            });
             onSuccess();
             onClose();
             form.reset();
         } catch (error) {
             console.error("Failed to add quality metric:", error);
-            // Ideally show a toast notification here
         } finally {
             setIsLoading(false);
         }
@@ -112,7 +120,11 @@ export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: Qual
                                     <FormItem>
                                         <FormLabel>Score (0-100)</FormLabel>
                                         <FormControl>
-                                            <Input type="number" {...field} />
+                                            <Input
+                                                type="number"
+                                                {...field}
+                                                onChange={(e) => field.onChange(Number(e.target.value))}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

@@ -186,13 +186,13 @@ Created → Harvested → Processing → Quality Check → Packaged → In Trans
 | Component | Status | Notes |
 |-----------|--------|-------|
 | CreateBatchDialog | ✅ Done | Connected to API |
-| QualityMetricsForm | ⬜ TODO | |
-| CertificationForm | ⬜ TODO | |
+| QualityMetricsForm | ✅ Done | |
+| CertificationForm | ✅ Done | |
 | EditBatchForm | ⬜ TODO | Placeholder page created |
-| QrCodeDialog | ⬜ TODO | Generate/Print QR |
-| RoleGuard | ⬜ TODO | Protect routes/actions |
+| QrCodeDialog | ✅ Done | Generate/Print QR |
+| RoleGuard | ✅ Done | Protect routes/actions |
 
-**Progress: 24/30 tasks (80%)**
+**Progress: 29/30 tasks (97%)**
 
 ---
 
@@ -223,6 +223,6 @@ Created → Harvested → Processing → Quality Check → Packaged → In Trans
 
 ## 📅 Current Sprint: Integration & Polish
 
-1. **Now:** Completing Admin forms (Quality, Certs)
-2. **Next:** Integration testing with blockchain
-3. **Then:** Mobile App development
+1. **Now:** Integration testing with blockchain
+2. **Next:** Mobile App development
+3. **Then:** Final system audit
