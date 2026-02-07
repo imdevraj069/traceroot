@@ -35,8 +35,8 @@ export default function CertificationsPage() {
 
     const fetchCertifications = async () => {
         try {
-            const data = await certifications.getAll();
-            setCerts(data);
+            const response = await certifications.getAll();
+            setCerts(response.data?.certifications || []);
         } catch (error) {
             console.error("Failed to fetch certifications:", error);
         } finally {

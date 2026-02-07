@@ -35,8 +35,8 @@ export default function UsersPage() {
 
     const fetchUsers = async () => {
         try {
-            const data = await auth.getUsers();
-            setUsers(data);
+            const response = await auth.getUsers();
+            setUsers(response.data?.users || []);
         } catch (error) {
             console.error("Failed to fetch users:", error);
         } finally {

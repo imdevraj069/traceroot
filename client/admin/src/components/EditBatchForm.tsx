@@ -63,7 +63,8 @@ export function EditBatchForm({ batchId }: EditBatchFormProps) {
     useEffect(() => {
         const fetchBatch = async () => {
             try {
-                const data = await batches.getById(batchId)
+                const response = await batches.getById(batchId)
+                const data = response.data
                 setBatch(data)
                 form.reset({
                     productName: data.productName,

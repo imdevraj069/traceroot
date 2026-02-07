@@ -57,8 +57,8 @@ export default function BatchDetailPage() {
                         batches.getById(params.id as string),
                         batches.getTimeline(params.id as string),
                     ]);
-                    setBatch(batchData);
-                    setTimeline(timelineData);
+                    setBatch(batchData.data);
+                    setTimeline(timelineData.data || []);
                 } catch (error) {
                     console.error('Failed to fetch batch data:', error);
                 } finally {

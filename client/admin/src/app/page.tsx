@@ -38,8 +38,10 @@ export default function Dashboard() {
       if (isAuthenticated) {
         try {
           const allBatches = await batches.getAll({ limit: 1000 });
-          const active = allBatches.batches.filter((b: any) => b.status !== 'Completed' && b.status !== 'Cancelled');
-          const qualityScores = allBatches.batches
+          // Fix: Access data property safely fallback to empty arrays
+          const batchList = allBatches.data?.batches || [];
+          const active = batchList.filter((b: any) => b.status !== 'Completed' && b.status !== 'Cancelled');
+          const qualityScores = batchList
             .filter((b: any) => b.qualityMetric)
             .map((b: any) => b.qualityMetric.score);
 
@@ -48,7 +50,7 @@ export default function Dashboard() {
             : 0;
 
           setStats({
-            totalBatches: allBatches.pagination.total,
+            totalBatches: allBatches.data?.pagination?.total || 0,
             activeBatches: active.length,
             qualityScore: avgQuality,
             totalUsers: 12, // Mock for now

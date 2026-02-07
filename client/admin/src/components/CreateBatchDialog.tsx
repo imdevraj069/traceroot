@@ -52,7 +52,13 @@ export function CreateBatchDialog({ onSuccess }: CreateProps) {
         setError('');
 
         try {
-            await batches.create(formData);
+            const payload = {
+                ...formData,
+                variety: formData.variety || undefined,
+                harvestDate: formData.harvestDate || undefined,
+                nfcTagId: formData.nfcTagId || undefined,
+            };
+            await batches.create(payload);
             setOpen(false);
             setFormData({
                 productName: '',

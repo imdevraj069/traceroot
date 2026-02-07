@@ -38,7 +38,8 @@ export default function QualityPage() {
             // Since we don't have a dedicated "getAllQualityMetrics" endpoint,
             // we'll fetch batches and extract the current quality status/metrics.
             // In a real app, this should be a dedicated endpoint for performance.
-            const batchData = await batches.getAll();
+            const response = await batches.getAll();
+            const batchData = response.data?.batches || [];
 
             // Transform batches into a flat list of quality reports
             // Assuming 'quality' field in batch is the overall status, 
