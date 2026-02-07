@@ -25,20 +25,12 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Load template with styles
+// Load template and replace variables
 const loadTemplate = (templateName, variables = {}) => {
     const templatesDir = path.join(__dirname, '../templates');
-
-    // Load styles
-    const stylesPath = path.join(templatesDir, 'style.css');
-    const styles = fs.readFileSync(stylesPath, 'utf-8');
-
-    // Load template
     const templatePath = path.join(templatesDir, `${templateName}.html`);
-    let template = fs.readFileSync(templatePath, 'utf-8');
 
-    // Inject styles
-    template = template.replace('{{STYLES}}', styles);
+    let template = fs.readFileSync(templatePath, 'utf-8');
 
     // Replace variables
     Object.entries(variables).forEach(([key, value]) => {
