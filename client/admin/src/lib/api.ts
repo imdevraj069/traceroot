@@ -67,6 +67,20 @@ export const auth = {
             headers: { Authorization: `Bearer ${token}` },
         });
     },
+    getUsers: async () => {
+        const token = localStorage.getItem('accessToken');
+        const res = await authApi.get('/api/auth/users', {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.data;
+    },
+    updateUserRole: async (userId: string, role: string) => {
+        const token = localStorage.getItem('accessToken');
+        const res = await authApi.put(`/api/auth/users/${userId}/role`, { role }, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.data;
+    },
 };
 
 // Batches API

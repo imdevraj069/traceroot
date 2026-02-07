@@ -168,11 +168,11 @@ Created → Harvested → Processing → Quality Check → Packaged → In Trans
 | Dashboard | `/` | ✅ Done | Widgets & Charts |
 | Batches List | `/batches` | ✅ Done | Table + Filters |
 | Batch Detail | `/batches/[id]` | ✅ Done | Tabs & Timeline |
-| Analytics | `/analytics` | ⬜ TODO | Detailed reports |
-| Quality | `/quality` | ⬜ TODO | Metrics CRUD |
-| Certifications | `/certifications` | ⬜ TODO | Cert CRUD |
-| Users | `/users` | ⬜ TODO | Admin only |
-| Settings | `/settings` | ⬜ TODO | Profile |
+| Analytics | `/analytics` | ✅ Done | Detailed reports |
+| Quality | `/quality` | ✅ Done | Metrics Overview |
+| Certifications | `/certifications` | ✅ Done | Cert CRUD |
+| Users | `/users` | ✅ Done | Admin only |
+| Settings | `/settings` | ✅ Done | Profile |
 
 ### Charts (Recharts)
 | Chart | Status | Notes |
@@ -180,7 +180,7 @@ Created → Harvested → Processing → Quality Check → Packaged → In Trans
 | BatchStatusChart | ✅ Done | Donut chart |
 | QualityTrendChart | ✅ Done | Area chart |
 | RegionalDistribution | ✅ Done | Bar chart |
-| MonthlyBatchesChart | ⬜ TODO | Area |
+| MonthlyBatchesChart | ✅ Done | Area |
 
 ### Forms & Dialogs
 | Component | Status | Notes |
@@ -192,7 +192,7 @@ Created → Harvested → Processing → Quality Check → Packaged → In Trans
 | QrCodeDialog | ✅ Done | Generate/Print QR |
 | RoleGuard | ✅ Done | Protect routes/actions |
 
-**Progress: 29/30 tasks (97%)**
+**Progress: 30/30 tasks (100%)**
 
 ---
 
