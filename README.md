@@ -85,8 +85,8 @@ traceroot/
         │                   │                   │
 ┌───────▼───────┐   ┌───────▼───────┐   ┌───────▼───────┐
 │ Auth Service  │   │ Trace Service │   │  Blockchain   │
-│    :3001      │   │    :3002      │   │   Service     │
-│               │   │               │   │    :3003      │
+│    :8001      │   │    :8002      │   │   Service     │
+│               │   │               │   │    :8003      │
 │ • JWT Auth    │   │ • Batches     │   │ • Contract    │
 │ • RBAC        │   │ • Quality     │   │   Calls       │
 │ • Emails      │   │ • Certs       │   │ • Wallet      │

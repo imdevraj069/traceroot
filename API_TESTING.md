@@ -1,17 +1,17 @@
 # 🧪 TraceRoot API Testing Guide
 
 **Base URLs:**
-- Auth Service: `http://localhost:3001`
-- Trace Service: `http://localhost:3002`
-- Blockchain Service: `http://localhost:3003`
+- Auth Service: `http://localhost:8001`
+- Trace Service: `http://localhost:8002`
+- Blockchain Service: `http://localhost:8003`
 
 ---
 
-## 🔐 Auth Service (Port 3001)
+## 🔐 Auth Service (Port 8001)
 
 ### Register User
 ```http
-POST http://localhost:3001/api/auth/register
+POST http://localhost:8001/api/auth/register
 Content-Type: application/json
 
 {
@@ -45,7 +45,7 @@ Content-Type: application/json
 
 ### Login
 ```http
-POST http://localhost:3001/api/auth/login
+POST http://localhost:8001/api/auth/login
 Content-Type: application/json
 
 {
@@ -77,7 +77,7 @@ Content-Type: application/json
 
 ### Refresh Token
 ```http
-POST http://localhost:3001/api/auth/refresh
+POST http://localhost:8001/api/auth/refresh
 Content-Type: application/json
 
 {
@@ -102,7 +102,7 @@ Content-Type: application/json
 
 ### Get Profile (Protected)
 ```http
-GET http://localhost:3001/api/auth/profile
+GET http://localhost:8001/api/auth/profile
 Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
 
@@ -130,7 +130,7 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 
 ### Update Profile (Protected)
 ```http
-PUT http://localhost:3001/api/auth/profile
+PUT http://localhost:8001/api/auth/profile
 Authorization: Bearer YOUR_ACCESS_TOKEN
 Content-Type: application/json
 
@@ -162,7 +162,7 @@ Content-Type: application/json
 
 ### Forgot Password
 ```http
-POST http://localhost:3001/api/auth/forgot-password
+POST http://localhost:8001/api/auth/forgot-password
 Content-Type: application/json
 
 {
@@ -184,7 +184,7 @@ Content-Type: application/json
 
 ### Reset Password
 ```http
-POST http://localhost:3001/api/auth/reset-password
+POST http://localhost:8001/api/auth/reset-password
 Content-Type: application/json
 
 {
@@ -208,7 +208,7 @@ Content-Type: application/json
 
 ### Logout
 ```http
-POST http://localhost:3001/api/auth/logout
+POST http://localhost:8001/api/auth/logout
 Content-Type: application/json
 
 {
@@ -230,7 +230,7 @@ Content-Type: application/json
 
 ### Get All Users (Admin Only)
 ```http
-GET http://localhost:3001/api/auth/users?page=1&limit=10
+GET http://localhost:8001/api/auth/users?page=1&limit=10
 Authorization: Bearer ADMIN_ACCESS_TOKEN
 ```
 
@@ -264,7 +264,7 @@ Authorization: Bearer ADMIN_ACCESS_TOKEN
 
 ### Update User Role (Admin Only)
 ```http
-PUT http://localhost:3001/api/auth/users/USER_ID/role
+PUT http://localhost:8001/api/auth/users/USER_ID/role
 Authorization: Bearer ADMIN_ACCESS_TOKEN
 Content-Type: application/json
 
@@ -290,11 +290,11 @@ Content-Type: application/json
 
 ---
 
-## 📦 Trace Service (Port 3002)
+## 📦 Trace Service (Port 8002)
 
 ### Create Batch (Supplier/Admin)
 ```http
-POST http://localhost:3002/api/batches
+POST http://localhost:8002/api/batches
 Authorization: Bearer YOUR_ACCESS_TOKEN
 Content-Type: application/json
 
@@ -339,7 +339,7 @@ Content-Type: application/json
 
 ### Get All Batches
 ```http
-GET http://localhost:3002/api/batches?page=1&limit=10&status=Created
+GET http://localhost:8002/api/batches?page=1&limit=10&status=Created
 Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
 
@@ -375,7 +375,7 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 
 ### Get Batch by ID
 ```http
-GET http://localhost:3002/api/batches/BATCH_MONGO_ID
+GET http://localhost:8002/api/batches/BATCH_MONGO_ID
 Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
 
@@ -422,7 +422,7 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 
 ### Add Quality Metric (Manufacturer)
 ```http
-POST http://localhost:3002/api/batches/BATCH_MONGO_ID/quality
+POST http://localhost:8002/api/batches/BATCH_MONGO_ID/quality
 Authorization: Bearer YOUR_ACCESS_TOKEN
 Content-Type: application/json
 
@@ -459,7 +459,7 @@ Content-Type: application/json
 
 ### Update Batch Status
 ```http
-PUT http://localhost:3002/api/batches/BATCH_MONGO_ID/status
+PUT http://localhost:8002/api/batches/BATCH_MONGO_ID/status
 Authorization: Bearer YOUR_ACCESS_TOKEN
 Content-Type: application/json
 
@@ -490,7 +490,7 @@ Content-Type: application/json
 
 ### Get Batch Timeline
 ```http
-GET http://localhost:3002/api/batches/BATCH_MONGO_ID/timeline
+GET http://localhost:8002/api/batches/BATCH_MONGO_ID/timeline
 Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
 
@@ -529,7 +529,7 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 
 ### Get QR Code
 ```http
-GET http://localhost:3002/api/batches/BATCH_MONGO_ID/qr
+GET http://localhost:8002/api/batches/BATCH_MONGO_ID/qr
 Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
 
@@ -551,7 +551,7 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 
 ### Public: Verify Batch
 ```http
-GET http://localhost:3002/api/public/batch/BATCH-1707312000000-ABCD1234
+GET http://localhost:8002/api/public/batch/BATCH-1707312000000-ABCD1234
 ```
 
 **Response (200):**
@@ -583,7 +583,7 @@ GET http://localhost:3002/api/public/batch/BATCH-1707312000000-ABCD1234
 
 ### Public: Verify NFC Tag
 ```http
-GET http://localhost:3002/api/public/verify/NFC-001
+GET http://localhost:8002/api/public/verify/NFC-001
 ```
 
 **Response (200):**
@@ -607,11 +607,11 @@ GET http://localhost:3002/api/public/verify/NFC-001
 
 ---
 
-## 🏆 Certifications (Trace Service - Port 3002)
+## 🏆 Certifications (Trace Service - Port 8002)
 
 ### Get Active Certifications (Public)
 ```http
-GET http://localhost:3002/api/certifications/active
+GET http://localhost:8002/api/certifications/active
 ```
 
 **Response (200):**
@@ -639,7 +639,7 @@ GET http://localhost:3002/api/certifications/active
 
 ### Get All Certifications (Protected)
 ```http
-GET http://localhost:3002/api/certifications?active=true&type=organic
+GET http://localhost:8002/api/certifications?active=true&type=organic
 Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
 
@@ -673,7 +673,7 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 
 ### Create Certification (Admin/Manufacturer)
 ```http
-POST http://localhost:3002/api/certifications
+POST http://localhost:8002/api/certifications
 Authorization: Bearer YOUR_ACCESS_TOKEN
 Content-Type: application/json
 
@@ -714,7 +714,7 @@ Content-Type: application/json
 
 ### Update Certification (Admin/Manufacturer)
 ```http
-PUT http://localhost:3002/api/certifications/CERT_ID
+PUT http://localhost:8002/api/certifications/CERT_ID
 Authorization: Bearer YOUR_ACCESS_TOKEN
 Content-Type: application/json
 
@@ -741,7 +741,7 @@ Content-Type: application/json
 
 ### Get Expiring Certifications (Protected)
 ```http
-GET http://localhost:3002/api/certifications/expiring?days=30
+GET http://localhost:8002/api/certifications/expiring?days=30
 Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
 
@@ -769,7 +769,7 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 
 ### Delete Certification (Admin Only)
 ```http
-DELETE http://localhost:3002/api/certifications/CERT_ID
+DELETE http://localhost:8002/api/certifications/CERT_ID
 Authorization: Bearer ADMIN_ACCESS_TOKEN
 ```
 
@@ -789,7 +789,7 @@ Authorization: Bearer ADMIN_ACCESS_TOKEN
 
 ### Add Quality Metric with Lab Report (Manufacturer)
 ```http
-POST http://localhost:3002/api/batches/BATCH_MONGO_ID/quality
+POST http://localhost:8002/api/batches/BATCH_MONGO_ID/quality
 Authorization: Bearer YOUR_ACCESS_TOKEN
 Content-Type: application/json
 
@@ -838,11 +838,11 @@ Content-Type: application/json
 
 ---
 
-## 🔗 Blockchain Service (Port 3003)
+## 🔗 Blockchain Service (Port 8003)
 
 ### Get Blockchain Status
 ```http
-GET http://localhost:3003/api/blockchain/status
+GET http://localhost:8003/api/blockchain/status
 ```
 
 **Response (200):**
@@ -873,7 +873,7 @@ GET http://localhost:3003/api/blockchain/status
 
 ### Record Batch on Blockchain
 ```http
-POST http://localhost:3003/api/blockchain/batch
+POST http://localhost:8003/api/blockchain/batch
 Content-Type: application/json
 
 {
@@ -907,7 +907,7 @@ Content-Type: application/json
 
 ### Verify NFC on Blockchain
 ```http
-POST http://localhost:3003/api/blockchain/verify-nfc
+POST http://localhost:8003/api/blockchain/verify-nfc
 Content-Type: application/json
 
 {
@@ -935,7 +935,7 @@ Content-Type: application/json
 
 ### Get Batch from Blockchain
 ```http
-GET http://localhost:3003/api/blockchain/batch/BATCH-1707312000000-ABCD1234
+GET http://localhost:8003/api/blockchain/batch/BATCH-1707312000000-ABCD1234
 ```
 
 **Response (200):**
@@ -963,7 +963,7 @@ GET http://localhost:3003/api/blockchain/batch/BATCH-1707312000000-ABCD1234
 
 ### Get Transaction Status
 ```http
-GET http://localhost:3003/api/blockchain/tx/0x1234567890abcdef...
+GET http://localhost:8003/api/blockchain/tx/0x1234567890abcdef...
 ```
 
 **Response (200):**
