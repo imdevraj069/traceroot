@@ -95,6 +95,10 @@ export const batches = {
         const res = await traceApi.post(`/api/batches/${id}/quality`, data);
         return res.data;
     },
+    addCertification: async (id: string, data: CertificationData) => {
+        const res = await traceApi.post(`/api/batches/${id}/certifications`, data);
+        return res.data;
+    },
     delete: async (id: string) => {
         const res = await traceApi.delete(`/api/batches/${id}`);
         return res.data;

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { auth, User } from '@/lib/api';
+import Cookies from 'js-cookie';
 
 interface AuthState {
     user: User | null;
@@ -29,6 +30,7 @@ export const useAuthStore = create<AuthState>()(
 
                 localStorage.setItem('accessToken', accessToken);
                 localStorage.setItem('refreshToken', refreshToken);
+                Cookies.set('accessToken', accessToken, { expires: 7 }); // 7 days expiry
 
                 set({
                     user,
@@ -47,6 +49,7 @@ export const useAuthStore = create<AuthState>()(
                 } finally {
                     localStorage.removeItem('accessToken');
                     localStorage.removeItem('refreshToken');
+                    Cookies.remove('accessToken');
                     set({
                         user: null,
                         accessToken: null,
@@ -81,6 +84,7 @@ export const useAuthStore = create<AuthState>()(
 
                             localStorage.setItem('accessToken', newToken);
                             localStorage.setItem('refreshToken', newRefresh);
+                            Cookies.set('accessToken', newToken, { expires: 7 });
 
                             const profileResponse = await auth.getProfile();
                             set({
