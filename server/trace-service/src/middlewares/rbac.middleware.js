@@ -1,6 +1,6 @@
 import ApiError from '../utils/ApiError.js';
 
-// Role hierarchy (higher index = more permissions)
+// Role hierarchy matching auth-service
 const ROLE_HIERARCHY = {
     user: 0,
     retailer: 1,
@@ -10,7 +10,7 @@ const ROLE_HIERARCHY = {
     admin: 5
 };
 
-// Check if user has required role
+// Require specific roles
 export const requireRole = (allowedRoles) => {
     return (req, res, next) => {
         if (!req.user) {
@@ -18,8 +18,6 @@ export const requireRole = (allowedRoles) => {
         }
 
         const userRole = req.user.role;
-
-        // Convert single role to array
         const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
 
         if (!roles.includes(userRole)) {
@@ -30,7 +28,7 @@ export const requireRole = (allowedRoles) => {
     };
 };
 
-// Check if user has minimum role level
+// Require minimum role level
 export const requireMinRole = (minRole) => {
     return (req, res, next) => {
         if (!req.user) {
@@ -48,7 +46,7 @@ export const requireMinRole = (minRole) => {
     };
 };
 
-// Admin only middleware
+// Admin only
 export const adminOnly = (req, res, next) => {
     if (!req.user) {
         return next(new ApiError(401, 'Authentication required'));
@@ -61,36 +59,28 @@ export const adminOnly = (req, res, next) => {
     next();
 };
 
-// Check if user is owner of resource or admin
-export const requireOwnerOrAdmin = (getResourceOwnerId) => {
-    return async (req, res, next) => {
-        if (!req.user) {
-            return next(new ApiError(401, 'Authentication required'));
-        }
+// Suppliers can create batches (they are the farmers/producers)
+export const canCreateBatch = requireRole(['admin', 'supplier']);
 
-        // Admins can access anything
-        if (req.user.role === 'admin') {
-            return next();
-        }
+// Manufacturers can process batches
+export const canProcessBatch = requireRole(['admin', 'manufacturer']);
 
-        try {
-            const ownerId = await getResourceOwnerId(req);
+// Quality check (admin or manufacturer)
+export const canAddQuality = requireRole(['admin', 'manufacturer']);
 
-            if (ownerId && ownerId.toString() === req.user.id) {
-                return next();
-            }
+// Distributors can update shipping/transit status
+export const canUpdateShipping = requireRole(['admin', 'distributor']);
 
-            return next(new ApiError(403, 'Access denied. You can only access your own resources.'));
-        } catch (error) {
-            next(error);
-        }
-    };
-};
+// Retailers can mark as delivered
+export const canMarkDelivered = requireRole(['admin', 'retailer']);
 
 export default {
     requireRole,
     requireMinRole,
     adminOnly,
-    requireOwnerOrAdmin,
-    ROLE_HIERARCHY
+    canCreateBatch,
+    canProcessBatch,
+    canAddQuality,
+    canUpdateShipping,
+    canMarkDelivered
 };

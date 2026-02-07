@@ -1,0 +1,44 @@
+{
+    "name": "traceroot-contracts",
+    "version": "1.0.0",
+    "description": "TraceRoot Smart Contracts for Supply Chain Traceability",
+    "main": "truffle-config.js",
+    "directories": {
+        "contracts": "contracts",
+        "migrations": "migrations",
+        "test": "test"
+    },
+    "scripts": {
+        "compile": "truffle compile",
+        "migrate": "truffle migrate",
+        "migrate:dev": "truffle migrate --network development",
+        "migrate:ganache": "truffle migrate --network ganache",
+        "migrate:reset": "truffle migrate --reset",
+        "test": "truffle test",
+        "console": "truffle console",
+        "console:dev": "truffle console --network development",
+        "clean": "rimraf build",
+        "deploy:local": "truffle migrate --network development --reset",
+        "export:abi": "node scripts/export-abi.js"
+    },
+    "keywords": [
+        "blockchain",
+        "ethereum",
+        "solidity",
+        "truffle",
+        "supply-chain",
+        "traceability",
+        "nfc"
+    ],
+    "author": "TraceRoot Team",
+    "license": "MIT",
+    "devDependencies": {
+        "@truffle/hdwallet-provider": "^2.1.15",
+        "chai": "^4.3.10",
+        "chai-as-promised": "^7.1.1",
+        "rimraf": "^5.0.5"
+    },
+    "dependencies": {
+        "@openzeppelin/contracts": "^5.0.1"
+    }
+}

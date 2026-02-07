@@ -42,7 +42,7 @@ export const getClientIp = (req) => {
 };
 
 // Register user
-export const registerUser = async ({ email, password, name, role = 'consumer' }, ipAddress) => {
+export const registerUser = async ({ email, password, name, role = 'user' }, ipAddress) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
         throw new ApiError(409, "User with this email already exists");
@@ -322,7 +322,7 @@ export const getAllUsers = async ({ page = 1, limit = 10, role }) => {
 
 // Admin: Update user role
 export const updateUserRole = async (userId, newRole) => {
-    const validRoles = ['admin', 'farmer', 'inspector', 'distributor', 'consumer'];
+    const validRoles = ['admin', 'supplier', 'manufacturer', 'distributor', 'retailer', 'user'];
     if (!validRoles.includes(newRole)) {
         throw new ApiError(400, `Invalid role. Must be one of: ${validRoles.join(', ')}`);
     }

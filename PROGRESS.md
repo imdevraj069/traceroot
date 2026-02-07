@@ -1,6 +1,6 @@
 # 📊 TraceRoot Project Progress
 
-**Last Updated:** February 7, 2026
+**Last Updated:** February 7, 2026 @ 6:32 PM IST
 
 ---
 
@@ -8,12 +8,33 @@
 
 | Phase | Status | Progress |
 |-------|--------|----------|
-| Phase 1: Foundation | 🟡 In Progress | 70% |
-| Phase 2: Backend Microservices | 🟡 In Progress | 65% |
-| Phase 3: Web Frontend | ⬜ Not Started | 0% |
-| Phase 4: Mobile App | ⬜ Not Started | 0% |
-| Phase 5: Integration & Testing | ⬜ Not Started | 0% |
-| Phase 6: Deployment | ⬜ Not Started | 0% |
+| Phase 1: Foundation | ✅ Complete | 100% |
+| Phase 2: Backend Microservices | ✅ Complete | 100% |
+| Phase 3: Smart Contracts | ✅ Complete | 100% |
+| Phase 4: Web Frontend | ⬜ Not Started | 0% |
+| Phase 5: Mobile App | ⬜ Not Started | 0% |
+| Phase 6: Integration & Testing | ⬜ Not Started | 0% |
+
+---
+
+## 👥 User Roles (from original repo)
+
+| Role | Description | Permissions |
+|------|-------------|-------------|
+| `admin` | System administrator | Full access |
+| `supplier` | Farmers/Producers | Create batches |
+| `manufacturer` | Processing facilities | Process & quality check |
+| `distributor` | Logistics & transport | Update shipping status |
+| `retailer` | End sellers | Mark delivered |
+| `user` | Public consumers | View/verify only |
+
+---
+
+## 📦 Batch Status Flow
+
+```
+Created → Harvested → Processing → Quality Check → Packaged → In Transit → In Distribution → Delivered → Completed
+```
 
 ---
 
@@ -23,7 +44,7 @@
 |------|--------|-------|
 | Project setup (Express, ES Modules) | ✅ Done | |
 | MongoDB connection | ✅ Done | `ConnectDb.js` |
-| User model & validation | ✅ Done | `user.model.js` |
+| User model & validation | ✅ Done | 6 roles aligned |
 | ApiError / ApiResponse / asyncHandler | ✅ Done | `src/utils/` |
 | Error handling middleware | ✅ Done | `errorHandler.js` |
 | `POST /api/auth/register` | ✅ Done | With welcome email |
@@ -41,7 +62,7 @@
 | JWT middleware | ✅ Done | `auth.middleware.js` |
 | Role-based access control | ✅ Done | `rbac.middleware.js` |
 | Refresh token support | ✅ Done | `refreshToken.model.js` |
-| Email templates | ✅ Done | welcome, reset, changed |
+| Email templates | ✅ Done | Inline CSS |
 | Nodemailer integration | ✅ Done | `email.service.js` |
 
 **Progress: 22/22 tasks (100%)** ✅
@@ -54,22 +75,30 @@
 |------|--------|-------|
 | Project setup | ✅ Done | |
 | MongoDB connection | ✅ Done | |
-| Batch model | ✅ Done | `batch.model.js` |
-| QualityMetric model | ✅ Done | `qualityMetric.model.js` |
+| Batch model | ✅ Done | 10 status values |
+| QualityMetric model | ✅ Done | With lab test fields |
+| StatusHistory model | ✅ Done | Supply chain tracking |
+| **Certification model** | ✅ Done | USDA, Fair Trade, ISO |
 | ApiError / ApiResponse / asyncHandler | ✅ Done | |
-| `POST /api/batches` | ✅ Done | Create batch |
-| `GET /api/batches` | ✅ Done | List batches |
-| `GET /api/batches/:id` | ✅ Done | Get batch |
-| `PUT /api/batches/:id` | ✅ Done | Update batch |
-| `DELETE /api/batches/:id` | ✅ Done | Delete batch |
-| `POST /api/batches/:id/quality` | ✅ Done | Add quality metric |
-| `GET /api/batches/:id/timeline` | ✅ Done | Supply chain timeline |
+| Auth middleware | ✅ Done | JWT + remote |
+| RBAC middleware | ✅ Done | Role-based permissions |
+| `POST /api/batches` | ✅ Done | Suppliers/Admins |
+| `GET /api/batches` | ✅ Done | Protected |
+| `GET /api/batches/:id` | ✅ Done | With history |
+| `PUT /api/batches/:id` | ✅ Done | Owner/Admin |
+| `DELETE /api/batches/:id` | ✅ Done | Owner/Admin |
+| `POST /api/batches/:id/quality` | ✅ Done | Lab reports supported |
+| `GET /api/batches/:id/timeline` | ✅ Done | Full supply chain |
+| `PUT /api/batches/:id/status` | ✅ Done | Role-based |
+| `GET /api/batches/:id/qr` | ✅ Done | QR generation |
+| `GET /api/batches/:id/qr/download` | ✅ Done | PNG download |
 | `GET /api/public/batch/:batchId` | ✅ Done | Public verification |
 | `GET /api/public/verify/:nfcTagId` | ✅ Done | NFC verification |
-| Auth middleware integration | ⬜ TODO | Connect to auth-service |
-| QR code generation endpoint | ⬜ TODO | |
+| QR code generation | ✅ Done | `qr.service.js` |
+| **Certifications CRUD** | ✅ Done | `/api/certifications` |
+| **Lab test reports** | ✅ Done | In QualityMetric |
 
-**Progress: 14/16 tasks (87%)**
+**Progress: 23/23 tasks (100%)** ✅
 
 ---
 
@@ -79,97 +108,99 @@
 |------|--------|-------|
 | Project setup | ✅ Done | |
 | MongoDB connection | ✅ Done | |
-| Transaction model | ✅ Done | `transaction.model.js` |
-| Web3/Ethers.js integration | ✅ Done | Using ethers v6 |
-| Contract ABI loading | ✅ Done | In service file |
-| `POST /api/blockchain/batch` | ✅ Done | Record on-chain |
-| `POST /api/blockchain/verify-nfc` | ✅ Done | Verify NFC |
-| `POST /api/blockchain/quality` | ✅ Done | Record quality metric |
+| Transaction model | ✅ Done | |
+| Ethers.js v6 integration | ✅ Done | `blockchain.service.js` |
+| Contract ABI loading | ✅ Done | Fallback to repo |
+| `POST /api/blockchain/batch` | ✅ Done | Record batch |
+| `POST /api/blockchain/verify-nfc` | ✅ Done | NFC authentication |
+| `POST /api/blockchain/quality` | ✅ Done | Quality metrics |
+| `POST /api/blockchain/status` | ✅ Done | Status update |
 | `GET /api/blockchain/tx/:hash` | ✅ Done | Transaction status |
 | `GET /api/blockchain/batch/:batchId` | ✅ Done | Get from chain |
 | `GET /api/blockchain/status` | ✅ Done | Connection status |
-| Wallet management | ⬜ TODO | Env-based for now |
-| Event listener for contract events | ⬜ TODO | |
-| Gas estimation utilities | ⬜ TODO | |
+| Wallet management | ✅ Done | Private key support |
+| Gas estimation | ✅ Done | `estimateGas()` |
 
-**Progress: 11/14 tasks (78%)**
-
----
-
-## 📜 Smart Contracts
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Truffle project setup | ⬜ TODO | In `contracts/` |
-| `BatchTracking.sol` | ⬜ TODO | Main contract |
-| - Batch creation & storage | ⬜ TODO | |
-| - NFC authentication | ⬜ TODO | |
-| - Quality metrics | ⬜ TODO | |
-| Write contract tests | ⬜ TODO | |
-| Deploy to local Ganache | ⬜ TODO | |
-
-**Progress: 0/7 tasks (0%)**
+**Progress: 14/14 tasks (100%)** ✅
 
 ---
 
-## 🌐 Client (Next.js)
+## 📜 Smart Contracts (`/contracts`)
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Initialize Next.js 16 | ⬜ TODO | |
-| Configure Tailwind CSS | ⬜ TODO | |
-| Set up Shadcn/ui | ⬜ TODO | |
-| API client for services | ⬜ TODO | |
-| Login page | ⬜ TODO | |
-| Registration page | ⬜ TODO | |
-| Dashboard | ⬜ TODO | |
-| Batch management | ⬜ TODO | |
-| Public verification | ⬜ TODO | |
+| Truffle project setup | ✅ Done | `truffle-config.js` |
+| `BatchTracking.sol` | ✅ Done | Batch, quality, NFC |
+| `SupplyChainStatus.sol` | ✅ Done | Status tracking |
+| `Migrations.sol` | ✅ Done | Standard Truffle |
+| Migration scripts | ✅ Done | `1_initial`, `2_deploy` |
+| Contract tests | ✅ Done | `BatchTracking.test.js` |
+| ABI export script | ✅ Done | `scripts/export-abi.js` |
+| `package.json` with scripts | ✅ Done | compile, deploy, test |
+| README documentation | ✅ Done | Setup instructions |
+
+**Progress: 9/9 tasks (100%)** ✅
+
+---
+
+## 🌐 Client - Next.js (Web Frontend)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Next.js project setup | ⬜ TODO | |
+| Tailwind CSS configuration | ⬜ TODO | |
+| Auth context & hooks | ⬜ TODO | |
+| Login/Register pages | ⬜ TODO | |
+| Dashboard layout | ⬜ TODO | |
+| Batch management UI | ⬜ TODO | |
+| QR scanner component | ⬜ TODO | |
+| Ethers.js integration | ⬜ TODO | Web3 wallet |
+| Supply chain visualization | ⬜ TODO | |
 
 **Progress: 0/9 tasks (0%)**
 
 ---
 
-## 📱 Mobile (Flutter)
+## 📱 Mobile - Flutter (APK)
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Initialize Flutter project | ⬜ TODO | |
-| Configure dependencies | ⬜ TODO | |
-| API clients | ⬜ TODO | |
-| Login/Registration screens | ⬜ TODO | |
-| Dashboard screen | ⬜ TODO | |
-| Batch screens | ⬜ TODO | |
-| NFC integration | ⬜ TODO | |
-| QR code features | ⬜ TODO | |
+| Flutter project setup | ⬜ TODO | |
+| Web3dart integration | ⬜ TODO | Blockchain |
+| NFC reading | ⬜ TODO | Native plugin |
+| Auth screens | ⬜ TODO | |
+| Batch list & detail | ⬜ TODO | |
+| QR code scanning | ⬜ TODO | |
+| Push notifications | ⬜ TODO | |
 | Offline support | ⬜ TODO | |
+| APK build | ⬜ TODO | |
 
 **Progress: 0/9 tasks (0%)**
 
 ---
 
-## 📝 Documentation
+## 📚 Documentation
 
 | Task | Status | Notes |
 |------|--------|-------|
-| README.md | ✅ Done | Project overview |
-| plan.md | ✅ Done | Development roadmap |
-| FEATURES.md | ✅ Done | Features & system design |
-| PROGRESS.md | ✅ Done | This file |
-| API documentation | ⬜ TODO | OpenAPI/Swagger |
-| Architecture diagrams | ⬜ TODO | |
+| Project README | ✅ Done | Root level |
+| API documentation | ⬜ TODO | Swagger/OpenAPI |
+| Contracts README | ✅ Done | `/contracts/README.md` |
+| Deployment guide | ⬜ TODO | |
+| Architecture diagram | ⬜ TODO | |
+| User guide | ⬜ TODO | |
 
-**Progress: 4/6 tasks (67%)**
+**Progress: 2/6 tasks (33%)**
 
 ---
 
-## 🐳 DevOps
+## 🚀 DevOps
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Docker Compose setup | ⬜ TODO | |
+| Docker Compose | ⬜ TODO | All services |
+| CI/CD pipeline | ⬜ TODO | GitHub Actions |
 | Environment configs | ✅ Done | `.env.local` files |
-| CI/CD pipeline | ⬜ TODO | |
 
 **Progress: 1/3 tasks (33%)**
 
@@ -177,11 +208,11 @@
 
 ## 📅 Next Steps
 
-1. ~~**Immediate:** Create JWT auth middleware for auth-service~~ ✅
-2. **Immediate:** Set up Truffle and deploy BatchTracking.sol
-3. **Short-term:** Connect trace-service to auth-service for protected routes
-4. **Short-term:** Initialize Next.js client
+1. **Immediate:** Start Next.js web frontend
+2. **Short-term:** Initialize Flutter mobile app
+3. **Integration:** Connect frontend to microservices
+4. **Documentation:** Add Swagger API docs
 
 ---
 
-*Update this file as you complete tasks!*
+*Backend infrastructure (auth-service, trace-service, blockchain-service) and smart contracts are complete. Ready for frontend development.*

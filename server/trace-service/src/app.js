@@ -31,9 +31,11 @@ app.get("/", (req, res) => {
 // Routes
 import batchRoutes from './routes/batch.routes.js';
 import publicRoutes from './routes/public.routes.js';
+import certificationRoutes from './routes/certification.routes.js';
 
 app.use('/api/batches', batchRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/certifications', certificationRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

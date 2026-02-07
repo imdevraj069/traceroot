@@ -20,12 +20,28 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'farmer', 'inspector', 'distributor', 'consumer'],
-        default: 'consumer'
+        enum: ['admin', 'supplier', 'manufacturer', 'distributor', 'retailer', 'user'],
+        default: 'user'
     },
     walletAddress: {
         type: String,
         default: null
+    },
+    phone: {
+        type: String,
+        trim: true
+    },
+    organization: {
+        type: String,
+        trim: true
+    },
+    location: {
+        type: String,
+        trim: true
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     }
 }, {
     timestamps: true

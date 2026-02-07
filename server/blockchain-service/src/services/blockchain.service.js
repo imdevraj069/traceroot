@@ -1,222 +1,297 @@
 import { ethers } from 'ethers';
-import Transaction from '../models/transaction.model.js';
-import ApiError from '../utils/ApiError.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Environment variables
-const RPC_URL = process.env.ETHEREUM_RPC_URL || 'http://localhost:8545';
-const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Contract ABI (simplified - load from file in production)
-const CONTRACT_ABI = [
-    "function createBatch(string batchId, string productName, string variety, uint256 quantity, string unit, string location, uint256 harvestDate, uint256 expiryDate, string nfcTagId) public",
-    "function authenticateNFC(string authId, string batchId, string nfcTagId, string location) public returns (bool)",
-    "function addQualityMetric(string metricId, string batchId, string metricType, string value, string unit) public",
-    "function getBatch(string batchId) public view returns (string, string, string, uint256, string, string, uint256, uint256, string, address, uint256, bool)",
-    "function getAllBatchIds() public view returns (string[] memory)",
-    "event BatchCreated(string indexed batchId, string productName, address indexed creator, uint256 timestamp)",
-    "event NFCAuthenticated(string indexed authId, string indexed batchId, string nfcTagId, bool isValid, uint256 timestamp)",
-    "event QualityMetricAdded(string indexed metricId, string indexed batchId, string metricType, address indexed inspector, uint256 timestamp)"
-];
-
-// Initialize provider and wallet
-let provider;
-let wallet;
-let contract;
-
-const initializeBlockchain = () => {
-    try {
-        provider = new ethers.JsonRpcProvider(RPC_URL);
-
-        if (PRIVATE_KEY) {
-            wallet = new ethers.Wallet(PRIVATE_KEY, provider);
-        }
-
-        if (CONTRACT_ADDRESS && wallet) {
-            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet);
-        }
-
-        return true;
-    } catch (error) {
-        console.error('Failed to initialize blockchain:', error);
-        return false;
+// Load contract ABIs
+const loadABI = (contractName) => {
+    const abiPath = path.join(__dirname, '..', 'contracts', `${contractName}.json`);
+    if (fs.existsSync(abiPath)) {
+        return JSON.parse(fs.readFileSync(abiPath, 'utf8'));
     }
+    // Fallback to repo contracts if not yet deployed
+    const fallbackPath = path.join(__dirname, '..', '..', '..', 'repo', 'src', 'contracts', `${contractName}.json`);
+    if (fs.existsSync(fallbackPath)) {
+        return JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
+    }
+    return null;
 };
 
-// Initialize on module load
-initializeBlockchain();
-
-export const recordBatchOnChain = async (data) => {
-    if (!contract) {
-        throw new ApiError(503, "Blockchain not configured");
+class BlockchainService {
+    constructor() {
+        this.provider = null;
+        this.signer = null;
+        this.batchTrackingContract = null;
+        this.supplyChainContract = null;
+        this.config = {
+            rpcUrl: process.env.BLOCKCHAIN_RPC_URL || 'http://127.0.0.1:8545',
+            batchTrackingAddress: process.env.BATCH_TRACKING_ADDRESS || '',
+            supplyChainAddress: process.env.SUPPLY_CHAIN_ADDRESS || '',
+            chainId: parseInt(process.env.BLOCKCHAIN_CHAIN_ID || '1337'),
+            privateKey: process.env.BLOCKCHAIN_PRIVATE_KEY || ''
+        };
     }
 
-    try {
-        const tx = await contract.createBatch(
-            data.batchId,
-            data.productName,
-            data.variety || '',
-            data.quantity || 0,
-            data.unit || 'kg',
-            data.location || '',
-            data.harvestDate ? Math.floor(new Date(data.harvestDate).getTime() / 1000) : 0,
-            data.expiryDate ? Math.floor(new Date(data.expiryDate).getTime() / 1000) : 0,
-            data.nfcTagId || ''
+    async initialize() {
+        try {
+            console.log('🔗 Initializing blockchain service...');
+
+            // Initialize provider
+            this.provider = new ethers.JsonRpcProvider(this.config.rpcUrl);
+
+            // Check connection
+            const network = await this.provider.getNetwork();
+            console.log(`📡 Connected to network: ${network.name} (chainId: ${network.chainId})`);
+
+            // Initialize signer
+            if (this.config.privateKey) {
+                this.signer = new ethers.Wallet(this.config.privateKey, this.provider);
+                console.log(`👛 Wallet address: ${this.signer.address}`);
+            } else {
+                // Use first account from provider (for development)
+                const accounts = await this.provider.listAccounts();
+                if (accounts.length > 0) {
+                    this.signer = await this.provider.getSigner(0);
+                    console.log(`👛 Using provider account: ${await this.signer.getAddress()}`);
+                }
+            }
+
+            // Load BatchTracking contract
+            if (this.config.batchTrackingAddress) {
+                const batchABI = loadABI('BatchTracking');
+                if (batchABI) {
+                    this.batchTrackingContract = new ethers.Contract(
+                        this.config.batchTrackingAddress,
+                        batchABI.abi,
+                        this.signer
+                    );
+                    console.log(`📄 BatchTracking contract: ${this.config.batchTrackingAddress}`);
+                }
+            }
+
+            // Load SupplyChainStatus contract
+            if (this.config.supplyChainAddress) {
+                const statusABI = loadABI('SupplyChainStatus');
+                if (statusABI) {
+                    this.supplyChainContract = new ethers.Contract(
+                        this.config.supplyChainAddress,
+                        statusABI.abi,
+                        this.signer
+                    );
+                    console.log(`📄 SupplyChainStatus contract: ${this.config.supplyChainAddress}`);
+                }
+            }
+
+            console.log('✅ Blockchain service initialized');
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to initialize blockchain:', error.message);
+            return false;
+        }
+    }
+
+    async isConnected() {
+        try {
+            if (!this.provider) return false;
+            await this.provider.getBlockNumber();
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    async getBalance(address) {
+        if (!this.provider) throw new Error('Not initialized');
+        const balance = await this.provider.getBalance(address || await this.signer.getAddress());
+        return ethers.formatEther(balance);
+    }
+
+    // ============== Batch Functions ==============
+
+    async createBatch(batchData) {
+        if (!this.batchTrackingContract) throw new Error('BatchTracking contract not loaded');
+
+        const {
+            batchId,
+            productName,
+            variety,
+            quantity,
+            unit,
+            location,
+            harvestDate,
+            expiryDate,
+            nfcTagId
+        } = batchData;
+
+        console.log(`📦 Creating batch on blockchain: ${batchId}`);
+
+        const tx = await this.batchTrackingContract.createBatch(
+            batchId,
+            productName,
+            variety || '',
+            BigInt(quantity),
+            unit || 'kg',
+            location,
+            BigInt(harvestDate),
+            BigInt(expiryDate),
+            nfcTagId || '',
+            { gasLimit: 3000000 }
         );
 
-        // Wait for transaction confirmation
+        console.log(`📤 Transaction sent: ${tx.hash}`);
         const receipt = await tx.wait();
+        console.log(`✅ Batch created in block: ${receipt.blockNumber}`);
 
-        // Store transaction record
-        await Transaction.create({
-            txHash: receipt.hash,
-            type: 'batch_creation',
-            batchId: data.batchId,
-            status: 'confirmed',
+        return {
+            txHash: tx.hash,
             blockNumber: receipt.blockNumber,
             gasUsed: receipt.gasUsed.toString()
-        });
-
-        return {
-            txHash: receipt.hash,
-            blockNumber: receipt.blockNumber,
-            gasUsed: receipt.gasUsed.toString(),
-            confirmed: true
         };
-    } catch (error) {
-        console.error('Blockchain error:', error);
-        throw new ApiError(500, `Blockchain transaction failed: ${error.message}`);
-    }
-};
-
-export const verifyNfcOnChain = async ({ batchId, nfcTagId, location }) => {
-    if (!contract) {
-        throw new ApiError(503, "Blockchain not configured");
     }
 
-    try {
-        const authId = `AUTH-${Date.now()}`;
-        const tx = await contract.authenticateNFC(authId, batchId, nfcTagId, location || '');
-        const receipt = await tx.wait();
+    async getBatch(batchId) {
+        if (!this.batchTrackingContract) throw new Error('BatchTracking contract not loaded');
 
-        await Transaction.create({
-            txHash: receipt.hash,
-            type: 'nfc_verification',
-            batchId,
-            status: 'confirmed',
-            blockNumber: receipt.blockNumber
-        });
+        const result = await this.batchTrackingContract.getBatch(batchId);
 
         return {
-            txHash: receipt.hash,
-            authId,
-            verified: true
+            productName: result[0],
+            variety: result[1],
+            quantity: Number(result[2]),
+            unit: result[3],
+            location: result[4],
+            harvestDate: new Date(Number(result[5]) * 1000),
+            expiryDate: new Date(Number(result[6]) * 1000),
+            nfcTagId: result[7],
+            creator: result[8],
+            timestamp: new Date(Number(result[9]) * 1000)
         };
-    } catch (error) {
-        throw new ApiError(500, `NFC verification failed: ${error.message}`);
-    }
-};
-
-export const recordQualityOnChain = async ({ batchId, metricType, value, unit }) => {
-    if (!contract) {
-        throw new ApiError(503, "Blockchain not configured");
     }
 
-    try {
-        const metricId = `METRIC-${Date.now()}`;
-        const tx = await contract.addQualityMetric(metricId, batchId, metricType, value, unit || '');
-        const receipt = await tx.wait();
+    async getTotalBatches() {
+        if (!this.batchTrackingContract) return 0;
+        const total = await this.batchTrackingContract.getTotalBatches();
+        return Number(total);
+    }
 
-        await Transaction.create({
-            txHash: receipt.hash,
-            type: 'quality_metric',
-            batchId,
-            status: 'confirmed',
-            blockNumber: receipt.blockNumber
-        });
+    // ============== Quality Metric Functions ==============
 
-        return {
-            txHash: receipt.hash,
+    async addQualityMetric(metricId, batchId, metricType, value, unit) {
+        if (!this.batchTrackingContract) throw new Error('BatchTracking contract not loaded');
+
+        const tx = await this.batchTrackingContract.addQualityMetric(
             metricId,
-            recorded: true
-        };
-    } catch (error) {
-        throw new ApiError(500, `Quality metric recording failed: ${error.message}`);
-    }
-};
+            batchId,
+            metricType,
+            value,
+            unit,
+            { gasLimit: 2000000 }
+        );
 
-export const getTransactionStatus = async (txHash) => {
-    if (!provider) {
-        throw new ApiError(503, "Blockchain not configured");
-    }
-
-    try {
-        const receipt = await provider.getTransactionReceipt(txHash);
-
-        if (!receipt) {
-            return { status: 'pending', confirmed: false };
-        }
+        console.log(`📊 Quality metric added: ${tx.hash}`);
+        const receipt = await tx.wait();
 
         return {
-            status: receipt.status === 1 ? 'confirmed' : 'failed',
-            confirmed: receipt.status === 1,
+            txHash: tx.hash,
+            blockNumber: receipt.blockNumber
+        };
+    }
+
+    async getBatchQualityMetrics(batchId) {
+        if (!this.batchTrackingContract) return [];
+        return await this.batchTrackingContract.getBatchQualityMetrics(batchId);
+    }
+
+    // ============== NFC Authentication Functions ==============
+
+    async authenticateNFC(authId, batchId, nfcTagId, location) {
+        if (!this.batchTrackingContract) throw new Error('BatchTracking contract not loaded');
+
+        console.log(`🔐 Authenticating NFC: ${nfcTagId} for batch ${batchId}`);
+
+        const tx = await this.batchTrackingContract.authenticateNFC(
+            authId,
+            batchId,
+            nfcTagId,
+            location,
+            { gasLimit: 2000000 }
+        );
+
+        const receipt = await tx.wait();
+
+        // Get authentication result
+        const authDetails = await this.batchTrackingContract.getAuthenticationDetails(authId);
+
+        return {
+            txHash: tx.hash,
             blockNumber: receipt.blockNumber,
-            gasUsed: receipt.gasUsed.toString()
+            isValid: authDetails.isValid
         };
-    } catch (error) {
-        throw new ApiError(500, `Failed to get transaction status: ${error.message}`);
-    }
-};
-
-export const getBatchFromChain = async (batchId) => {
-    if (!contract) {
-        throw new ApiError(503, "Blockchain not configured");
     }
 
-    try {
-        const result = await contract.getBatch(batchId);
+    // ============== Status Functions ==============
+
+    async updateStatus(batchId, status, location, notes) {
+        if (!this.supplyChainContract) throw new Error('SupplyChainStatus contract not loaded');
+
+        const statusMap = {
+            'Created': 0,
+            'Harvested': 1,
+            'Processing': 2,
+            'Quality Check': 3,
+            'Packaged': 4,
+            'In Transit': 5,
+            'In Distribution': 6,
+            'Delivered': 7,
+            'Completed': 8,
+            'Cancelled': 9
+        };
+
+        const statusCode = statusMap[status] ?? 0;
+
+        const tx = await this.supplyChainContract.updateStatus(
+            batchId,
+            statusCode,
+            location || '',
+            notes || '',
+            { gasLimit: 500000 }
+        );
+
+        const receipt = await tx.wait();
 
         return {
-            batchId: result[0],
-            productName: result[1],
-            variety: result[2],
-            quantity: result[3].toString(),
-            unit: result[4],
-            location: result[5],
-            harvestDate: new Date(Number(result[6]) * 1000),
-            expiryDate: new Date(Number(result[7]) * 1000),
-            nfcTagId: result[8],
-            creator: result[9],
-            timestamp: new Date(Number(result[10]) * 1000),
-            exists: result[11]
+            txHash: tx.hash,
+            blockNumber: receipt.blockNumber
         };
-    } catch (error) {
-        throw new ApiError(500, `Failed to get batch from blockchain: ${error.message}`);
     }
-};
 
-export const getBlockchainStatus = async () => {
-    try {
-        const isInitialized = initializeBlockchain();
+    // ============== Utility Functions ==============
 
-        if (!provider) {
-            return { connected: false, message: "Provider not configured" };
+    async getGasPrice() {
+        if (!this.provider) return null;
+        const feeData = await this.provider.getFeeData();
+        return {
+            gasPrice: ethers.formatUnits(feeData.gasPrice || 0n, 'gwei'),
+            maxFeePerGas: feeData.maxFeePerGas ? ethers.formatUnits(feeData.maxFeePerGas, 'gwei') : null
+        };
+    }
+
+    async estimateGas(method, ...args) {
+        if (!this.batchTrackingContract) return null;
+        try {
+            const gas = await this.batchTrackingContract[method].estimateGas(...args);
+            return gas.toString();
+        } catch (error) {
+            console.error('Gas estimation failed:', error.message);
+            return null;
         }
-
-        const network = await provider.getNetwork();
-        const blockNumber = await provider.getBlockNumber();
-
-        return {
-            connected: true,
-            network: network.name,
-            chainId: network.chainId.toString(),
-            blockNumber,
-            contractConfigured: !!contract
-        };
-    } catch (error) {
-        return {
-            connected: false,
-            message: error.message
-        };
     }
-};
+}
+
+// Singleton instance
+const blockchainService = new BlockchainService();
+
+export default blockchainService;

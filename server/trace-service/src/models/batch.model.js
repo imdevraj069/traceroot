@@ -6,6 +6,10 @@ const batchSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    batchNumber: {
+        type: String,
+        trim: true
+    },
     productName: {
         type: String,
         required: [true, 'Product name is required'],
@@ -24,9 +28,12 @@ const batchSchema = new mongoose.Schema({
         type: String,
         default: 'kg'
     },
-    location: {
+    origin: {
         type: String,
-        required: [true, 'Location is required']
+        required: [true, 'Origin is required']
+    },
+    currentLocation: {
+        type: String
     },
     harvestDate: {
         type: Date
@@ -39,6 +46,11 @@ const batchSchema = new mongoose.Schema({
         unique: true,
         sparse: true
     },
+    quality: {
+        type: String,
+        enum: ['Premium', 'Standard', 'Economy'],
+        default: 'Standard'
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -49,11 +61,32 @@ const batchSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['created', 'inspected', 'shipped', 'delivered'],
-        default: 'created'
+        enum: [
+            'Created',
+            'Harvested',
+            'Processing',
+            'Quality Check',
+            'Packaged',
+            'In Transit',
+            'In Distribution',
+            'Delivered',
+            'Completed',
+            'Cancelled'
+        ],
+        default: 'Created'
+    },
+    lastUpdated: {
+        type: Date,
+        default: Date.now
     }
 }, {
     timestamps: true
+});
+
+// Update lastUpdated on save
+batchSchema.pre('save', function (next) {
+    this.lastUpdated = new Date();
+    next();
 });
 
 const Batch = mongoose.model('Batch', batchSchema);

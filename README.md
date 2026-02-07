@@ -15,6 +15,7 @@ TraceRoot is an end-to-end supply chain management system that uses **Ethereum b
 - ✅ **Microservices-based backend** for scalability
 - ✅ **NFC tag authentication** for anti-counterfeiting
 - ✅ **Public verification** via QR codes
+- ✅ **Lab test reports & certifications** tracking
 - ✅ **Complete traceability** from farm to consumer
 
 ---
@@ -24,41 +25,36 @@ TraceRoot is an end-to-end supply chain management system that uses **Ethereum b
 ```
 traceroot/
 │
-├── client/                       # 🌐 Web Frontend (Next.js)
-│   ├── app/                      # App router pages
-│   ├── components/               # Reusable UI components
-│   └── lib/                      # Utilities & API clients
-│
-├── mobile/                       # 📱 Mobile App (Flutter)
-│   ├── lib/                      # Dart source code
-│   ├── android/                  # Android platform files
-│   └── ios/                      # iOS platform files
+├── contracts/                    # 📜 Solidity Smart Contracts
+│   ├── contracts/
+│   │   ├── BatchTracking.sol     # Batch, quality, NFC tracking
+│   │   ├── SupplyChainStatus.sol # Status updates & progress
+│   │   └── Migrations.sol        # Truffle migrations
+│   ├── migrations/               # Deployment scripts
+│   ├── test/                     # Contract tests
+│   └── truffle-config.js         # Truffle configuration
 │
 ├── server/                       # ⚙️ Backend Microservices
-│   ├── auth-service/             # 🔐 Authentication & Users
-│   ├── trace-service/            # 📦 Batch & Supply Chain
-│   ├── blockchain-service/       # 🔗 Ethereum Interactions
-│   └── gateway/                  # 🚪 API Gateway (optional)
+│   ├── auth-service/             # 🔐 Port 3001
+│   │   ├── models/               # User, RefreshToken, PasswordReset
+│   │   ├── services/             # Auth, Email
+│   │   ├── middlewares/          # JWT, RBAC
+│   │   └── templates/            # Email templates
+│   │
+│   ├── trace-service/            # 📦 Port 3002
+│   │   ├── models/               # Batch, QualityMetric, Certification, StatusHistory
+│   │   ├── services/             # Batch, Certification, QR
+│   │   └── middlewares/          # Auth, RBAC
+│   │
+│   └── blockchain-service/       # 🔗 Port 3003
+│       ├── services/             # Blockchain (ethers.js)
+│       └── contracts/            # Contract ABIs
 │
-├── contracts/                    # 📜 Solidity Smart Contracts
-│   ├── BatchTracking.sol         # Main supply chain contract
-│   └── migrations/               # Truffle deployment scripts
+├── client/                       # 🌐 Web Frontend (Next.js) - TODO
+├── mobile/                       # 📱 Mobile App (Flutter) - TODO
 │
-├── shared/                       # 🔄 Shared Code & Types
-│   ├── types/                    # TypeScript interfaces
-│   └── utils/                    # Common utilities
-│
-├── docs/                         # 📚 Documentation
-│   ├── api/                      # API documentation
-│   ├── architecture/             # System design docs
-│   └── guides/                   # Setup & usage guides
-│
-├── scripts/                      # 🛠️ Automation Scripts
-│   ├── deploy.sh                 # Deployment scripts
-│   └── setup.sh                  # Initial setup
-│
-├── docker-compose.yml            # 🐳 Container orchestration
-├── plan.md                       # 📋 Development roadmap
+├── API_TESTING.md                # API testing guide with examples
+├── PROGRESS.md                   # Development progress tracker
 └── README.md                     # This file
 ```
 
@@ -68,12 +64,12 @@ traceroot/
 
 | Layer | Technology |
 |-------|------------|
-| **Blockchain** | Ethereum, Solidity 0.8, Truffle, Ganache |
-| **Mobile** | Flutter 3.0+, Dart, web3dart, NFC Manager |
+| **Blockchain** | Ethereum, Solidity 0.8.19, Truffle, Ganache |
+| **Backend** | Node.js, Express 5 (ES Modules, Microservices) |
+| **Database** | MongoDB (Mongoose ODM) |
+| **Auth** | JWT (access + refresh), bcrypt, RBAC |
 | **Web** | Next.js 16, React 19, TypeScript, Tailwind CSS |
-| **Backend** | Node.js, Express 5 (Microservices) |
-| **Database** | MongoDB (Mongoose) |
-| **Auth** | JWT, bcrypt |
+| **Mobile** | Flutter 3.0+, Dart, web3dart, NFC Manager |
 | **DevOps** | Docker, Docker Compose |
 
 ---
@@ -85,16 +81,16 @@ traceroot/
 │                   Client Apps (Web / Mobile)                 │
 └───────────────────────────┬─────────────────────────────────┘
                             │
-                    ┌───────▼───────┐
-                    │  API Gateway  │  (Optional)
-                    └───────┬───────┘
-                            │
         ┌───────────────────┼───────────────────┐
         │                   │                   │
 ┌───────▼───────┐   ┌───────▼───────┐   ┌───────▼───────┐
 │ Auth Service  │   │ Trace Service │   │  Blockchain   │
-│  :3001        │   │   :3002       │   │   Service     │
-│               │   │               │   │   :3003       │
+│    :3001      │   │    :3002      │   │   Service     │
+│               │   │               │   │    :3003      │
+│ • JWT Auth    │   │ • Batches     │   │ • Contract    │
+│ • RBAC        │   │ • Quality     │   │   Calls       │
+│ • Emails      │   │ • Certs       │   │ • Wallet      │
+│ • Refresh     │   │ • QR/NFC      │   │ • Gas Est.    │
 └───────┬───────┘   └───────┬───────┘   └───────┬───────┘
         │                   │                   │
 ┌───────▼───────┐   ┌───────▼───────┐   ┌───────▼───────┐
@@ -105,10 +101,30 @@ traceroot/
 
 | Service | Port | Responsibility |
 |---------|------|----------------|
-| **auth-service** | 3001 | User registration, login, JWT, roles |
-| **trace-service** | 3002 | Batch CRUD, supply chain events, quality metrics |
-| **blockchain-service** | 3003 | Smart contract calls, on-chain verification |
-| **gateway** | 3000 | Request routing, rate limiting (optional) |
+| **auth-service** | 3001 | User registration, login, JWT, RBAC, password reset, emails |
+| **trace-service** | 3002 | Batches, quality metrics, lab reports, certifications, QR codes |
+| **blockchain-service** | 3003 | Smart contract calls, NFC verification, on-chain records |
+
+---
+
+## 👥 User Roles
+
+| Role | Description | Permissions |
+|------|-------------|-------------|
+| `admin` | System administrator | Full access to all features |
+| `supplier` | Farmers/Producers | Create batches, attach NFC tags |
+| `manufacturer` | Processing facilities | Add quality metrics, lab reports, certifications |
+| `distributor` | Logistics & transport | Update shipping status, track shipments |
+| `retailer` | End sellers | Mark batches as delivered |
+| `user` | Public consumers | View/verify product info (read-only) |
+
+---
+
+## 📦 Supply Chain Status Flow
+
+```
+Created → Harvested → Processing → Quality Check → Packaged → In Transit → In Distribution → Delivered → Completed
+```
 
 ---
 
@@ -119,20 +135,11 @@ traceroot/
 | 🔒 **Blockchain Immutability** | Batch records stored permanently on Ethereum |
 | 📱 **NFC Authentication** | Physical products linked to blockchain via NFC tags |
 | 🔄 **Dual Verification** | Cross-verify MongoDB (speed) + Blockchain (trust) |
-| 📊 **Quality Tracking** | On-chain quality metrics with inspector proof |
+| 📊 **Quality & Lab Reports** | On-chain quality metrics with lab test details |
+| 🏆 **Certifications** | Track USDA Organic, Fair Trade, ISO certifications |
 | 📲 **QR Verification** | Public product verification without login |
-| 🧩 **Scalable Architecture** | Independent microservices for flexibility |
-
----
-
-## 👥 User Roles
-
-| Role | Permissions |
-|------|-------------|
-| **Farmer** | Create batches, attach NFC tags, generate QR codes |
-| **Inspector** | Record quality metrics, certify batches |
-| **Distributor** | Verify products, track shipments |
-| **Consumer** | View product origin, journey, and quality data |
+| 📧 **Email Notifications** | Welcome, password reset, status updates |
+| 🧩 **Scalable Architecture** | Independent microservices |
 
 ---
 
@@ -140,36 +147,65 @@ traceroot/
 
 ### Prerequisites
 - Node.js 18+
-- MongoDB
-- Flutter 3.0+
-- Ganache
-- Docker (optional)
+- MongoDB (running on localhost:27017)
+- Ganache (for local blockchain)
+- Flutter 3.0+ (for mobile)
 
-### 1. Clone & Setup
+### 1. Clone & Install
 ```bash
 git clone https://github.com/yourusername/traceroot.git
 cd traceroot
+
+# Install dependencies for each service
+cd server/auth-service && npm install
+cd ../trace-service && npm install
+cd ../blockchain-service && npm install
+cd ../../contracts && npm install
 ```
 
-### 2. Start Services
+### 2. Deploy Smart Contracts
 ```bash
-# Start MongoDB & Ganache
-docker-compose up -d mongo ganache
+# Start Ganache
+npx ganache --port 8545
 
 # Deploy contracts
-cd contracts && npx truffle migrate --reset
-
-# Start microservices
-cd server/auth-service && npm run dev
-cd server/trace-service && npm run dev
-cd server/blockchain-service && npm run dev
-
-# Start client
-cd client && npm run dev
-
-# Start mobile (on device/emulator)
-cd mobile && flutter run
+cd contracts
+npm run deploy:local
+npm run export:abi
 ```
+
+### 3. Configure Environment
+```bash
+# Copy .env.local files in each service and configure:
+# - MONGO_URI
+# - JWT_SECRET
+# - Blockchain contract addresses
+```
+
+### 4. Start Services
+```bash
+# Terminal 1: Auth Service
+cd server/auth-service && npm run dev
+
+# Terminal 2: Trace Service
+cd server/trace-service && npm run dev
+
+# Terminal 3: Blockchain Service
+cd server/blockchain-service && npm run dev
+```
+
+### 5. Test APIs
+See [API_TESTING.md](./API_TESTING.md) for complete API documentation with examples.
+
+---
+
+## 📁 Documentation
+
+| File | Description |
+|------|-------------|
+| [PROGRESS.md](./PROGRESS.md) | Development progress tracker |
+| [API_TESTING.md](./API_TESTING.md) | API endpoints with request/response examples |
+| [contracts/README.md](./contracts/README.md) | Smart contract documentation |
 
 ---
 
