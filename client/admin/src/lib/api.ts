@@ -166,6 +166,8 @@ export interface Batch {
     createdBy?: string;
     createdAt: string;
     updatedAt: string;
+    qualityMetrics?: QualityMetric[];
+    statusHistory?: StatusHistory[];
 }
 
 export interface CreateBatchData {
@@ -181,10 +183,8 @@ export interface CreateBatchData {
 
 export interface QualityMetricData {
     metricType: string;
-    value: number;
-    unit?: string;
+    score: number;
     category?: string;
-    score?: number;
     status?: string;
     notes?: string;
     labName?: string;
@@ -192,6 +192,7 @@ export interface QualityMetricData {
     reportNumber?: string;
     reportUrl?: string;
     testDate?: string;
+    // value and unit removed as they are legacy/unused now
 }
 
 export interface CertificationData {
@@ -232,4 +233,14 @@ export interface TimelineEvent {
     timestamp: string;
     location?: string;
     description: string;
+}
+
+export interface StatusHistory {
+    _id?: string;
+    batchId: string;
+    status: string;
+    location?: string;
+    notes?: string;
+    updatedBy?: string;
+    createdAt?: string;
 }

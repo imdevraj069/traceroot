@@ -1,5 +1,7 @@
 "use client"
 
+import { Sidebar } from '@/components/Sidebar';
+import { DashboardHeader } from '@/components/DashboardHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { MonthlyBatchesChart } from "@/components/charts/MonthlyBatchesChart"
 import { QualityTrendChart } from "@/components/charts/QualityTrendChart"
@@ -8,10 +10,14 @@ import { RegionalDistribution } from "@/components/charts/RegionalDistribution"
 
 export default function AnalyticsPage() {
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Analytics</h2>
-            </div>
+        <div className="flex h-screen bg-gray-50">
+            <Sidebar />
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <DashboardHeader />
+                <main className="flex-1 overflow-y-auto p-6">
+                    <div className="flex items-center justify-between space-y-2 mb-6">
+                        <h2 className="text-3xl font-bold tracking-tight">Analytics</h2>
+                    </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* We can duplicate StatsCards here or create specific analytics cards */}
@@ -58,6 +64,8 @@ export default function AnalyticsPage() {
                         <RegionalDistribution />
                     </CardContent>
                 </Card>
+            </div>
+                </main>
             </div>
         </div>
     )

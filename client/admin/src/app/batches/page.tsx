@@ -12,10 +12,13 @@ import { CreateBatchDialog } from '@/components/CreateBatchDialog';
 
 export default function BatchesPage() {
     const router = useRouter();
-    const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+    const { isAuthenticated, isLoading, checkAuth, user } = useAuthStore();
     const [data, setData] = useState<Batch[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('');
+
+    // Only admin and supplier can create batches
+    const canCreateBatch = user?.role === 'admin' || user?.role === 'supplier';
 
     const fetchBatches = async () => {
         try {
@@ -76,7 +79,7 @@ export default function BatchesPage() {
                                 <Download className="w-4 h-4 mr-2" />
                                 Export
                             </button>
-                            <CreateBatchDialog onSuccess={fetchBatches} />
+                            {canCreateBatch && <CreateBatchDialog onSuccess={fetchBatches} />}
                         </div>
                     </div>
 

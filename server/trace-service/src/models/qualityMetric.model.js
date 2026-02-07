@@ -24,7 +24,7 @@ const qualityMetricSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Certified', 'Passed', 'Clear', 'Monitoring', 'Failed'],
+        enum: ['Pending', 'Certified', 'Passed', 'Clear', 'Monitoring', 'Failed'],
         default: 'Passed'
     },
     notes: {
@@ -34,16 +34,33 @@ const qualityMetricSchema = new mongoose.Schema({
     // Legacy fields for backward compatibility
     metricType: {
         type: String,
-        enum: ['temperature', 'pH', 'moisture', 'purity', 'weight', 'curcumin_content', 'heavy_metals', 'organic', 'other'],
+        enum: [
+            'General Quality',
+            'Moisture Content',
+            'Purity Analysis',
+            'Heavy Metals',
+            'Curcumin Content',
+            'Organic Certification',
+            'temperature',
+            'pH',
+            'moisture',
+            'purity',
+            'weight',
+            'curcumin_content',
+            'heavy_metals',
+            'organic',
+            'other'
+        ],
         default: 'other'
     },
     value: {
         type: String,
         default: ''
     },
+    // unit field for metrics
     unit: {
         type: String,
-        default: ''
+        default: ''  // e.g., '%', 'mg/kg', 'ppm'
     },
     passed: {
         type: Boolean,

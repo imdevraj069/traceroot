@@ -84,9 +84,8 @@ const batchSchema = new mongoose.Schema({
 });
 
 // Update lastUpdated on save
-batchSchema.pre('save', function (next) {
+batchSchema.pre('save', function () {
     this.lastUpdated = new Date();
-    next();
 });
 
 const Batch = mongoose.model('Batch', batchSchema);

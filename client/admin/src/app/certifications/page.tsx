@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Sidebar } from '@/components/Sidebar';
+import { DashboardHeader } from '@/components/DashboardHeader';
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -45,9 +47,13 @@ export default function CertificationsPage() {
     };
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Certifications</h2>
+        <div className="flex h-screen bg-gray-50">
+            <Sidebar />
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <DashboardHeader />
+                <main className="flex-1 overflow-y-auto p-6">
+                    <div className="flex items-center justify-between space-y-2 mb-6">
+                        <h2 className="text-3xl font-bold tracking-tight">Certifications</h2>
                 <div className="flex items-center space-x-2">
                     <Button onClick={() => { }}>
                         <Plus className="mr-2 h-4 w-4" /> Add Certification
@@ -105,6 +111,8 @@ export default function CertificationsPage() {
                     </Table>
                 </CardContent>
             </Card>
+                </main>
+            </div>
         </div>
     )
 }

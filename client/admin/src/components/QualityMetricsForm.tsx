@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { useAuthStore } from "@/store/auth-store"
 import { Button } from "@/components/ui/button"
 import {
     Form,
@@ -31,16 +32,21 @@ import {
 } from "@/components/ui/dialog"
 import { useState } from "react"
 import { batches } from "@/lib/api"
+import { AlertCircle, Lock } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 
 const formSchema = z.object({
-    category: z.string().min(2, {
-        message: "Category must be at least 2 characters.",
+    metricType: z.string().min(2, {
+        message: "Metric Type is required.",
     }),
     score: z.number().min(0).max(100),
+    category: z.string().optional(),
     status: z.enum(["Pending", "Passed", "Failed"]),
+    unit: z.string().optional(),
     labName: z.string().optional(),
     testMethod: z.string().optional(),
     reportNumber: z.string().optional(),
+    notes: z.string().optional(),
 })
 
 interface QualityMetricsFormProps {
@@ -51,17 +57,24 @@ interface QualityMetricsFormProps {
 }
 
 export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: QualityMetricsFormProps) {
+    const { user } = useAuthStore();
     const [isLoading, setIsLoading] = useState(false);
+    
+    // Only admin and manufacturer can add quality metrics
+    const canAddQuality = user?.role === 'admin' || user?.role === 'manufacturer';
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            category: "",
+            metricType: "General Quality",
             score: 0,
+            category: "Quality Check",
             status: "Pending",
+            unit: "",
             labName: "",
             testMethod: "",
             reportNumber: "",
+            notes: "",
         },
     })
 
@@ -69,14 +82,15 @@ export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: Qual
         setIsLoading(true);
         try {
             await batches.addQuality(batchId, {
-                metricType: "General Quality",
-                value: values.score,
-                category: values.category,
+                metricType: values.metricType,
                 score: values.score,
+                category: values.category || "Quality Check",
                 status: values.status,
+                unit: values.unit,
                 labName: values.labName,
                 testMethod: values.testMethod,
-                reportNumber: values.reportNumber
+                reportNumber: values.reportNumber,
+                notes: values.notes
             });
             onSuccess();
             onClose();
@@ -88,9 +102,30 @@ export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: Qual
         }
     }
 
+    if (!canAddQuality) {
+        return (
+            <Dialog open={isOpen} onOpenChange={onClose}>
+                <DialogContent className="sm:max-w-[425px] bg-white">
+                    <DialogHeader>
+                        <DialogTitle>Add Quality Metric</DialogTitle>
+                    </DialogHeader>
+                    <Card className="border-red-200 bg-red-50">
+                        <CardContent className="pt-6 flex items-center gap-3">
+                            <Lock className="w-5 h-5 text-red-600" />
+                            <div>
+                                <p className="font-medium text-red-900">Access Denied</p>
+                                <p className="text-sm text-red-700">Your role ({user?.role}) does not have permission to add quality metrics. Only Admin and Manufacturer roles can add quality metrics.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </DialogContent>
+            </Dialog>
+        )
+    }
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px] bg-white">
                 <DialogHeader>
                     <DialogTitle>Add Quality Metric</DialogTitle>
                     <DialogDescription>
@@ -101,17 +136,30 @@ export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: Qual
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
                             control={form.control}
-                            name="category"
+                            name="metricType"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Category</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="e.g. Moisture Content" {...field} />
-                                    </FormControl>
+                                    <FormLabel>Metric Type</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select metric type" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="General Quality">General Quality</SelectItem>
+                                            <SelectItem value="Moisture Content">Moisture Content</SelectItem>
+                                            <SelectItem value="Purity Analysis">Purity Analysis</SelectItem>
+                                            <SelectItem value="Heavy Metals">Heavy Metals</SelectItem>
+                                            <SelectItem value="Curcumin Content">Curcumin Content</SelectItem>
+                                            <SelectItem value="Organic Certification">Organic Certification</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
@@ -122,6 +170,8 @@ export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: Qual
                                         <FormControl>
                                             <Input
                                                 type="number"
+                                                min="0"
+                                                max="100"
                                                 {...field}
                                                 onChange={(e) => field.onChange(Number(e.target.value))}
                                             />
@@ -132,40 +182,71 @@ export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: Qual
                             />
                             <FormField
                                 control={form.control}
-                                name="status"
+                                name="unit"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Status</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select status" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="Pending">Pending</SelectItem>
-                                                <SelectItem value="Passed">Passed</SelectItem>
-                                                <SelectItem value="Failed">Failed</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <FormLabel>Unit</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g., %, mg/kg, ppm" {...field} />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
                         </div>
+
                         <FormField
                             control={form.control}
-                            name="labName"
+                            name="status"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Lab Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Optional" {...field} />
-                                    </FormControl>
+                                    <FormLabel>Status</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select status" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="Pending">Pending</SelectItem>
+                                            <SelectItem value="Passed">Passed</SelectItem>
+                                            <SelectItem value="Failed">Failed</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="labName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Lab Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g., Bureau Veritas" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="testMethod"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Test Method</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g., HPLC" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
                         <FormField
                             control={form.control}
                             name="reportNumber"
@@ -173,14 +254,29 @@ export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: Qual
                                 <FormItem>
                                     <FormLabel>Report Number</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Optional" {...field} />
+                                        <Input placeholder="e.g., BV-2026-0157" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+
+                        <FormField
+                            control={form.control}
+                            name="notes"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Notes</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Additional comments..." {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
                         <DialogFooter>
-                            <Button type="submit" disabled={isLoading}>
+                            <Button type="submit" disabled={isLoading} className="w-full">
                                 {isLoading ? "Saving..." : "Save Metric"}
                             </Button>
                         </DialogFooter>

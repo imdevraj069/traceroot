@@ -30,14 +30,27 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import { TimelineEvent } from '@/lib/api';
+import { QualityMetricsForm } from '@/components/QualityMetricsForm';
+import { CertificationForm } from '@/components/CertificationForm';
+import { QrCodeDialog } from '@/components/QrCodeDialog';
+import { BatchStatusUpdate } from '@/components/BatchStatusUpdate';
 
 export default function BatchDetailPage() {
     const router = useRouter();
     const params = useParams();
-    const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+    const { isAuthenticated, isLoading, checkAuth, user } = useAuthStore();
     const [batch, setBatch] = useState<Batch | null>(null);
     const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showQualityForm, setShowQualityForm] = useState(false);
+    const [showCertForm, setShowCertForm] = useState(false);
+    const [showQrDialog, setShowQrDialog] = useState(false);
+
+    // Role-based permissions
+    const userRole = user?.role || "";
+    const canAddQuality = userRole === 'admin' || userRole === 'manufacturer';
+    const canAddCertification = userRole === 'admin';
+    const canUpdateStatus = userRole === 'admin' || userRole === 'distributor' || userRole === 'retailer';
 
     useEffect(() => {
         checkAuth();
@@ -49,23 +62,24 @@ export default function BatchDetailPage() {
         }
     }, [isLoading, isAuthenticated, router]);
 
-    useEffect(() => {
-        const fetchBatchData = async () => {
-            if (isAuthenticated && params.id) {
-                try {
-                    const [batchData, timelineData] = await Promise.all([
-                        batches.getById(params.id as string),
-                        batches.getTimeline(params.id as string),
-                    ]);
-                    setBatch(batchData.data);
-                    setTimeline(timelineData.data || []);
-                } catch (error) {
-                    console.error('Failed to fetch batch data:', error);
-                } finally {
-                    setLoading(false);
-                }
+    const fetchBatchData = async () => {
+        if (isAuthenticated && params.id) {
+            try {
+                const [batchData, timelineData] = await Promise.all([
+                    batches.getById(params.id as string),
+                    batches.getTimeline(params.id as string),
+                ]);
+                setBatch(batchData.data);
+                setTimeline(timelineData.data || []);
+            } catch (error) {
+                console.error('Failed to fetch batch data:', error);
+            } finally {
+                setLoading(false);
             }
-        };
+        }
+    };
+
+    useEffect(() => {
         fetchBatchData();
     }, [isAuthenticated, params.id]);
 
@@ -100,15 +114,25 @@ export default function BatchDetailPage() {
                             <p className="text-gray-500">Created on {formatDate(batch.createdAt)}</p>
                         </div>
                         <div className="ml-auto flex gap-2">
+                            {canAddQuality && (
+                                <Button variant="outline" onClick={() => setShowQualityForm(true)}>
+                                    Add Quality Metric
+                                </Button>
+                            )}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline">Actions</Button>
+                                    <Button variant="outline">More Actions</Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => { }}>Update Status</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { }}>Add Quality Report</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => router.push(`/batches/${batch._id}/edit`)}>Edit Batch</DropdownMenuItem>
+                                    {canAddCertification && (
+                                        <DropdownMenuItem onClick={() => setShowCertForm(true)}>Add Certification</DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem onClick={() => setShowQrDialog(true)}>Add Quality Report</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => { }}>Generate QR Code</DropdownMenuItem>
-                                    <DropdownMenuItem className="text-red-600">Delete Batch</DropdownMenuItem>
+                                    {userRole === 'admin' && (
+                                        <DropdownMenuItem className="text-red-600">Delete Batch</DropdownMenuItem>
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -190,6 +214,16 @@ export default function BatchDetailPage() {
                                     </CardContent>
                                 </Card>
                             </div>
+
+                            <div className="mt-6">
+                                {canUpdateStatus && (
+                                    <BatchStatusUpdate 
+                                        batchId={params.id as string} 
+                                        currentStatus={batch.status}
+                                        onSuccess={fetchBatchData}
+                                    />
+                                )}
+                            </div>
                         </TabsContent>
 
                         <TabsContent value="timeline">
@@ -231,15 +265,73 @@ export default function BatchDetailPage() {
                                     <CardTitle>Quality Reports</CardTitle>
                                 </CardHeader>
                                 <CardContent>
+                                    {batch.qualityMetrics && batch.qualityMetrics.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {batch.qualityMetrics.map((metric: QualityMetric) => (
+                                                <div key={metric._id} className="border rounded-lg p-4">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h4 className="font-semibold">{metric.category}</h4>
+                                                            <p className="text-sm text-gray-500">Score: {metric.score}/100</p>
+                                                            {metric.labName && <p className="text-sm text-gray-500">Lab: {metric.labName}</p>}
+                                                        </div>
+                                                        <Badge variant={metric.status === 'Passed' ? 'default' : metric.status === 'Failed' ? 'destructive' : 'secondary'}>
+                                                            {metric.status}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-10 text-gray-500">
+                                            <Shield className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                                            <p>No quality reports available for this batch yet.</p>
+                                            <Button variant="outline" className="mt-4" onClick={() => setShowQualityForm(true)}>Add Report</Button>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        <TabsContent value="documents">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Documents</CardTitle>
+                                    <CardDescription>Certifications and compliance documents</CardDescription>
+                                </CardHeader>
+                                <CardContent>
                                     <div className="text-center py-10 text-gray-500">
-                                        <Shield className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                                        <p>No quality reports available for this batch yet.</p>
-                                        <Button variant="outline" className="mt-4">Add Report</Button>
+                                        <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                                        <p>No documents available for this batch yet.</p>
                                     </div>
                                 </CardContent>
                             </Card>
                         </TabsContent>
                     </Tabs>
+
+                    {/* Dialogs */}
+                    {batch && (
+                        <>
+                            <QualityMetricsForm
+                                batchId={batch._id}
+                                isOpen={showQualityForm}
+                                onClose={() => setShowQualityForm(false)}
+                                onSuccess={fetchBatchData}
+                            />
+                            <CertificationForm
+                                batchId={batch._id}
+                                isOpen={showCertForm}
+                                onClose={() => setShowCertForm(false)}
+                                onSuccess={fetchBatchData}
+                            />
+                            <QrCodeDialog
+                                isOpen={showQrDialog}
+                                onClose={() => setShowQrDialog(false)}
+                                batchId={batch.batchId}
+                                productName={batch.productName}
+                            />
+                        </>
+                    )}
                 </main>
             </div>
         </div>

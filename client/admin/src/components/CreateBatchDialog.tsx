@@ -25,10 +25,10 @@ export function CreateBatchDialog({ onSuccess }: CreateProps) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [formData, setFormData] = useState<CreateBatchData>({
+    const [formData, setFormData] = useState({
         productName: '',
         variety: '',
-        quantity: 0,
+        quantity: '',
         unit: 'kg',
         origin: '',
         harvestDate: '',
@@ -42,7 +42,7 @@ export function CreateBatchDialog({ onSuccess }: CreateProps) {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: name === 'quantity' ? Number(value) : value
+            [name]: value
         }));
     };
 
@@ -52,8 +52,11 @@ export function CreateBatchDialog({ onSuccess }: CreateProps) {
         setError('');
 
         try {
-            const payload = {
-                ...formData,
+            const payload: CreateBatchData = {
+                productName: formData.productName,
+                quantity: Number(formData.quantity),
+                unit: formData.unit,
+                origin: formData.origin,
                 variety: formData.variety || undefined,
                 harvestDate: formData.harvestDate || undefined,
                 nfcTagId: formData.nfcTagId || undefined,
@@ -63,7 +66,7 @@ export function CreateBatchDialog({ onSuccess }: CreateProps) {
             setFormData({
                 productName: '',
                 variety: '',
-                quantity: 0,
+                quantity: '',
                 unit: 'kg',
                 origin: '',
                 harvestDate: '',
@@ -87,7 +90,7 @@ export function CreateBatchDialog({ onSuccess }: CreateProps) {
                     New Batch
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px] bg-white">
                 <DialogHeader>
                     <DialogTitle>Create New Batch</DialogTitle>
                     <DialogDescription>

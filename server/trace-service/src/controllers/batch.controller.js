@@ -5,9 +5,10 @@ import * as batchService from '../services/batch.service.js';
 import * as qrService from '../services/qr.service.js';
 
 export const createBatch = asyncHandler(async (req, res) => {
-    const { productName, variety, quantity, unit, location, harvestDate, expiryDate, nfcTagId } = req.body;
+    const { productName, variety, quantity, unit, origin, harvestDate, expiryDate, nfcTagId } = req.body;
+    console.log(req.body);
 
-    if (!productName || !quantity || !location) {
+    if (!productName || !quantity || !origin) {
         throw new ApiError(400, "Product name, quantity, and location are required");
     }
 
@@ -16,7 +17,7 @@ export const createBatch = asyncHandler(async (req, res) => {
         variety,
         quantity,
         unit,
-        location,
+        origin,
         harvestDate,
         expiryDate,
         nfcTagId,
@@ -28,7 +29,11 @@ export const createBatch = asyncHandler(async (req, res) => {
 
 export const getAllBatches = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, status } = req.query;
-    const userId = req.user.role === 'admin' ? null : req.user.id;
+
+    // Allow admin, supplier, manufacturer, and distributor to see all batches
+    // Other roles only see batches they created
+    const canViewAll = ['admin', 'supplier', 'manufacturer', 'distributor'].includes(req.user.role);
+    const userId = canViewAll ? null : req.user.id;
 
     const batches = await batchService.getAllBatches({ page, limit, status, userId });
 
@@ -62,16 +67,21 @@ export const deleteBatch = asyncHandler(async (req, res) => {
 
 export const addQualityMetric = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { metricType, value, unit } = req.body;
+    const { metricType, score, category, status, labName, testMethod, reportNumber, notes } = req.body;
 
-    if (!metricType || !value) {
-        throw new ApiError(400, "Metric type and value are required");
+    if (!metricType || score === undefined) {
+        throw new ApiError(400, "Metric type and score are required");
     }
 
     const metric = await batchService.addQualityMetric(id, {
         metricType,
-        value,
-        unit,
+        score,
+        category: category || 'General',
+        status: status || 'Pending',
+        labName,
+        testMethod,
+        reportNumber,
+        notes,
         inspectorId: req.user.id
     });
 

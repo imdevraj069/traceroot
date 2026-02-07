@@ -67,7 +67,7 @@ export function QrCodeDialog({ isOpen, onClose, batchId, productName }: QrCodeDi
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md bg-white">
                 <DialogHeader>
                     <DialogTitle>Batch QR Code</DialogTitle>
                     <DialogDescription>
