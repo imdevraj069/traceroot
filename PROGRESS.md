@@ -130,7 +130,7 @@ TraceRoot is a blockchain-based supply chain transparency platform. The project 
 ### Phase 5: Mobile App (Flutter)
 **Objective:** Native mobile experience for field operations and scanning.
 
-#### 📱 Status: In Progress (15%)
+#### 📱 Status: In Progress (75%)
 *   ✅ **Initialization**:
     *   Flutter project created in `mobileapp/`.
     *   Android Permissions configured (Camera, NFC, Location, Internet).
@@ -139,13 +139,22 @@ TraceRoot is a blockchain-based supply chain transparency platform. The project 
     *   **State Management**: Riverpod configured.
     *   **Routing**: GoRouter setup (`app_router.dart`).
     *   **Networking**: Dio client with JWT interceptors (`api_client.dart`).
-*   ✅ **Dependencies**:
-    *   `mobile_scanner`, `nfc_manager`, `geolocator`, `flutter_secure_storage`.
+*   ✅ **Authentication Module**:
+    *   **Logic**: `AuthRepository` & `AuthController` implemented.
+    *   **UI**: Login Screen with email/password validation.
+    *   **Security**: Secure storage for JWT tokens.
+*   ✅ **Batch Management**:
+    *   **Logic**: `BatchesRepository` (CRUD).
+    *   **UI**: `BatchesListScreen`, `BatchDetailScreen` (Overview).
+    *   **Actions**: `CreateBatchScreen` with multi-step validation.
+*   ✅ **Scanner Module**:
+    *   **Logic**: `mobile_scanner` integrated.
+    *   **UI**: `ScannerScreen` for QR code detection.
 *   ⬜ **Upcoming Tasks**:
-    *   Implement Login Screen & Logic.
-    *   Build Batch List & Detail screens.
-    *   Implement Hardware Scanner logic.
-    *   GPS location integration for status updates.
+    *   **Detail View Polish**: Implement Timeline visualization widget.
+    *   **Public Verification**: Unauthenticated view for consumers.
+    *   **Hardware Integration**: GPS location for status updates.
+    *   **Polish**: Animations, Error handling, and Offline support.
 
 ---
 

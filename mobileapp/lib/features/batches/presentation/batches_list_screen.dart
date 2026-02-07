@@ -44,8 +44,7 @@ class BatchesListScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right),
                   isThreeLine: true,
                   onTap: () {
-                    // TODO: Navigate to detail
-                    // context.push('/batches/${batch.id}');
+                    context.go('/batches/${batch.id}');
                   },
                 ),
               );
@@ -55,11 +54,25 @@ class BatchesListScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Error: $error')),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.go('/batches/scan');
-        },
-        child: const Icon(Icons.qr_code_scanner),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: 'scan',
+            onPressed: () {
+              context.go('/batches/scan');
+            },
+            child: const Icon(Icons.qr_code_scanner),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: 'create',
+            onPressed: () {
+              context.go('/batches/create');
+            },
+            child: const Icon(Icons.add),
+          ),
+        ],
       ),
     );
   }
