@@ -23,6 +23,16 @@ class BatchesController extends StateNotifier<AsyncValue<void>> {
       state = AsyncValue.error(e, st);
     }
   }
+
+  Future<void> updateStatus(String id, String status, String location) async {
+    state = const AsyncValue.loading();
+    try {
+      await _repository.updateStatus(id, status, location);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
 }
 
 final batchesControllerProvider =

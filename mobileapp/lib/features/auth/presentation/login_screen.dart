@@ -102,6 +102,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildQuickLoginChip('Admin', 'admin@traceroot.com'),
+                      _buildQuickLoginChip(
+                        'Supplier',
+                        'supplier@traceroot.com',
+                      ),
+                      _buildQuickLoginChip('Mfg', 'manufacturer@traceroot.com'),
+                      _buildQuickLoginChip('Dist', 'distributor@traceroot.com'),
+                      _buildQuickLoginChip('Retail', 'retailer@traceroot.com'),
+                      _buildQuickLoginChip(
+                        'Consumer',
+                        'consumer@traceroot.com',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -116,6 +136,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildQuickLoginChip(String label, String email) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: ActionChip(
+        label: Text(label),
+        onPressed: () {
+          _emailController.text = email;
+          _passwordController.text = 'password123';
+          _submit();
+        },
       ),
     );
   }

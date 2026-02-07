@@ -2,6 +2,7 @@ import ApiError from '../utils/ApiError.js';
 
 // Role hierarchy (higher index = more permissions)
 const ROLE_HIERARCHY = {
+    consumer: 0,
     user: 0,
     retailer: 1,
     distributor: 2,

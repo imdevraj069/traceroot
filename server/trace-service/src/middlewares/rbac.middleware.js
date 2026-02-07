@@ -2,6 +2,7 @@ import ApiError from '../utils/ApiError.js';
 
 // Role hierarchy matching auth-service
 const ROLE_HIERARCHY = {
+    consumer: 0,
     user: 0,
     retailer: 1,
     distributor: 2,
@@ -47,7 +48,7 @@ export const requireMinRole = (minRole) => {
 };
 
 // Admin only
-export const adminOnly = (req, res, next) => {
+export const isAdmin = (req, res, next) => {
     if (!req.user) {
         return next(new ApiError(401, 'Authentication required'));
     }
@@ -77,7 +78,7 @@ export const canMarkDelivered = requireRole(['admin', 'retailer']);
 export default {
     requireRole,
     requireMinRole,
-    adminOnly,
+    isAdmin,
     canCreateBatch,
     canProcessBatch,
     canAddQuality,

@@ -4,6 +4,7 @@ import 'package:mobileapp/features/auth/presentation/login_screen.dart';
 import 'package:mobileapp/features/batches/presentation/batches_list_screen.dart';
 import 'package:mobileapp/features/batches/presentation/create_batch_screen.dart';
 import 'package:mobileapp/features/batches/presentation/batch_detail_screen.dart';
+import 'package:mobileapp/features/batches/presentation/public_verification_screen.dart';
 import 'package:mobileapp/features/scanner/presentation/scanner_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -29,6 +30,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                 BatchDetailScreen(batchId: state.pathParameters['id']!),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/verify/:id',
+        builder: (context, state) =>
+            PublicVerificationScreen(batchId: state.pathParameters['id']!),
       ),
     ],
   );

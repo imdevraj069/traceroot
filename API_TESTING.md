@@ -7,6 +7,26 @@
 
 ---
 
+## ⚡ Quick Start & Default Users
+
+To quickly set up your environment for testing, run the seeding script:
+```bash
+node scripts/seed_users.js
+```
+
+This will create the following users (Password: `password123` for all):
+
+| Role | Email |
+|------|-------|
+| **Admin** | `admin@traceroot.com` |
+| **Supplier** | `supplier@traceroot.com` |
+| **Manufacturer** | `manufacturer@traceroot.com` |
+| **Distributor** | `distributor@traceroot.com` |
+| **Retailer** | `retailer@traceroot.com` |
+| **Consumer** | `consumer@traceroot.com` |
+
+---
+
 ## 🔐 Auth Service (Port 8001)
 
 ### Register User

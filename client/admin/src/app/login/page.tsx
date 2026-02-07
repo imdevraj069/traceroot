@@ -140,25 +140,31 @@ export default function LoginPage() {
                             </div>
                             <div className="relative flex justify-center text-sm">
                                 <span className="px-2 bg-white text-gray-500">
-                                    Or continue with
+                                    Or use Quick Login (Dev Only)
                                 </span>
                             </div>
                         </div>
 
                         <div className="mt-6 grid grid-cols-2 gap-3">
-                            <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <span className="sr-only">Sign in with Google</span>
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
-                                </svg>
-                            </button>
-
-                            <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <span className="sr-only">Sign in with Microsoft</span>
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4V11.4zM24 11.4H12.6V0H24V11.4z" />
-                                </svg>
-                            </button>
+                            {[
+                                { role: 'Admin', email: 'admin@traceroot.com' },
+                                { role: 'Supplier', email: 'supplier@traceroot.com' },
+                                { role: 'Mfg', email: 'manufacturer@traceroot.com' },
+                                { role: 'Distributor', email: 'distributor@traceroot.com' },
+                                { role: 'Retailer', email: 'retailer@traceroot.com' },
+                                { role: 'Consumer', email: 'consumer@traceroot.com' },
+                            ].map((user) => (
+                                <button
+                                    key={user.role}
+                                    type="button"
+                                    onClick={() => {
+                                        login(user.email, 'password123').then(() => router.push('/'));
+                                    }}
+                                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                >
+                                    {user.role}
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>

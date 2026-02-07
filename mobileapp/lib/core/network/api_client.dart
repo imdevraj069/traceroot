@@ -31,3 +31,32 @@ final dioProvider = Provider<Dio>((ref) {
 
   return dio;
 });
+
+final traceDioProvider = Provider<Dio>((ref) {
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: EnvConfig.traceUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ),
+  );
+
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        const storage = FlutterSecureStorage();
+        final token = await storage.read(key: 'accessToken');
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        return handler.next(options);
+      },
+    ),
+  );
+
+  return dio;
+});

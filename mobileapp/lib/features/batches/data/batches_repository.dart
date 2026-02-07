@@ -4,7 +4,7 @@ import 'package:mobileapp/core/network/api_client.dart';
 import 'package:mobileapp/features/batches/domain/batch.dart';
 
 final batchesRepositoryProvider = Provider<BatchesRepository>((ref) {
-  return BatchesRepository(ref.read(dioProvider));
+  return BatchesRepository(ref.read(traceDioProvider));
 });
 
 class BatchesRepository {
@@ -33,6 +33,26 @@ class BatchesRepository {
   Future<void> createBatch(Map<String, dynamic> data) async {
     try {
       await _dio.post('/batches', data: data);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<Batch> getPublicBatchById(String id) async {
+    try {
+      final response = await _dio.get('/public/batch/$id');
+      return Batch.fromJson(response.data);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateStatus(String id, String status, String location) async {
+    try {
+      await _dio.put(
+        '/batches/$id/status',
+        data: {'status': status, 'location': location},
+      );
     } catch (e) {
       throw e;
     }

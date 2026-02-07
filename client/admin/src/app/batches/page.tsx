@@ -21,7 +21,7 @@ export default function BatchesPage() {
         try {
             setLoading(true);
             const result = await batches.getAll({ status: filter || undefined });
-            setData(result.batches);
+            setData(result.data?.batches || []);
         } catch (error) {
             console.error('Failed to fetch batches:', error);
         } finally {

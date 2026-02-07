@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobileapp/features/batches/data/batches_repository.dart';
 import 'package:mobileapp/features/batches/domain/batch.dart';
+import 'package:mobileapp/features/batches/presentation/update_batch_status_dialog.dart';
 
 final batchDetailProvider = FutureProvider.autoDispose.family<Batch, String>((
   ref,
@@ -35,18 +36,75 @@ class BatchDetailScreen extends ConsumerWidget {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              // TODO: Implement Timeline Widget
-              const Card(
-                child: Padding(
+              if (batch.history.isEmpty)
+                const Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: Text('Timeline placeholder'),
+                  child: Text(
+                    'No history available yet.',
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: batch.history.length,
+                  itemBuilder: (context, index) {
+                    final item = batch.history[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8.0),
+                      child: ListTile(
+                        leading: const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                        ),
+                        title: Text(
+                          item.status,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(item.location),
+                            Text(
+                              item.timestamp,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            if (item.txHash != null)
+                              Text(
+                                'Tx: ${item.txHash!.substring(0, 10)}...',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              ),
             ],
           ),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Error: $error')),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => UpdateBatchStatusDialog(
+              batchId: batchId,
+              currentStatus: batchAsync.value?.status ?? 'CREATED',
+            ),
+          );
+        },
+        label: const Text('Update Status'),
+        icon: const Icon(Icons.edit_location_alt),
       ),
     );
   }
