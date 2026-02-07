@@ -1,0 +1,33 @@
+{
+    "name": "blockchain-service",
+    "version": "1.0.0",
+    "description": "Ethereum blockchain interaction microservice for TraceRoot",
+    "type": "module",
+    "main": "server.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "nodemon --env-file=.env.local server.js",
+        "start": "node --env-file=.env server.js"
+    },
+    "keywords": [
+        "blockchain",
+        "ethereum",
+        "web3",
+        "microservice"
+    ],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.28.2",
+    "devDependencies": {
+        "nodemon": "^3.1.11"
+    },
+    "dependencies": {
+        "cors": "^2.8.6",
+        "ethers": "^6.13.0",
+        "express": "^5.2.1",
+        "helmet": "^8.1.0",
+        "mongoose": "^9.1.6",
+        "morgan": "^1.10.1",
+        "web3": "^4.15.0"
+    }
+}
