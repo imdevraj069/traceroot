@@ -17,7 +17,7 @@ class BatchesRepository {
       final response = await _dio.get('/batches');
       return (response.data as List).map((e) => Batch.fromJson(e)).toList();
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -26,7 +26,7 @@ class BatchesRepository {
       final response = await _dio.get('/batches/$id');
       return Batch.fromJson(response.data);
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -34,7 +34,7 @@ class BatchesRepository {
     try {
       await _dio.post('/batches', data: data);
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -43,7 +43,7 @@ class BatchesRepository {
       final response = await _dio.get('/public/batch/$id');
       return Batch.fromJson(response.data);
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -54,7 +54,7 @@ class BatchesRepository {
         data: {'status': status, 'location': location},
       );
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 }

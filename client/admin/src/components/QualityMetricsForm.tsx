@@ -59,6 +59,7 @@ interface QualityMetricsFormProps {
 export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: QualityMetricsFormProps) {
     const { user } = useAuthStore();
     const [isLoading, setIsLoading] = useState(false);
+    const [certificateFile, setCertificateFile] = useState<File | null>(null);
     
     // Only admin and manufacturer can add quality metrics
     const canAddQuality = user?.role === 'admin' || user?.role === 'manufacturer';
@@ -81,20 +82,27 @@ export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: Qual
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsLoading(true);
         try {
-            await batches.addQuality(batchId, {
-                metricType: values.metricType,
-                score: values.score,
-                category: values.category || "Quality Check",
-                status: values.status,
-                unit: values.unit,
-                labName: values.labName,
-                testMethod: values.testMethod,
-                reportNumber: values.reportNumber,
-                notes: values.notes
-            });
+            const formData = new FormData();
+            formData.append('metricType', values.metricType);
+            formData.append('score', values.score.toString());
+            formData.append('category', values.category || "Quality Check");
+            formData.append('status', values.status);
+            if (values.unit) formData.append('unit', values.unit);
+            if (values.labName) formData.append('labName', values.labName);
+            if (values.testMethod) formData.append('testMethod', values.testMethod);
+            // reportNumber is auto-generated if empty, but we can send it if user entered one
+            if (values.reportNumber) formData.append('reportNumber', values.reportNumber);
+            if (values.notes) formData.append('notes', values.notes);
+            
+            if (certificateFile) {
+                formData.append('certificate', certificateFile);
+            }
+
+            await batches.addQuality(batchId, formData);
             onSuccess();
             onClose();
             form.reset();
+            setCertificateFile(null);
         } catch (error) {
             console.error("Failed to add quality metric:", error);
         } finally {
@@ -252,14 +260,29 @@ export function QualityMetricsForm({ batchId, isOpen, onClose, onSuccess }: Qual
                             name="reportNumber"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Report Number</FormLabel>
+                                    <FormLabel>Report Number (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="e.g., BV-2026-0157" {...field} />
+                                        <Input placeholder="Auto-generated if empty" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+
+                        <FormItem>
+                            <FormLabel>Certificate File</FormLabel>
+                            <FormControl>
+                                <Input 
+                                    type="file" 
+                                    accept=".pdf,image/*"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) setCertificateFile(file);
+                                    }} 
+                                />
+                            </FormControl>
+                            <FormDescription>Upload PDF or image certificate</FormDescription>
+                        </FormItem>
 
                         <FormField
                             control={form.control}

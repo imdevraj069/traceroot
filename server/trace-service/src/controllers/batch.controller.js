@@ -73,7 +73,7 @@ export const addQualityMetric = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Metric type and score are required");
     }
 
-    const metric = await batchService.addQualityMetric(id, {
+    const metricData = {
         metricType,
         score,
         category: category || 'General',
@@ -83,7 +83,15 @@ export const addQualityMetric = asyncHandler(async (req, res) => {
         reportNumber,
         notes,
         inspectorId: req.user.id
-    });
+    };
+
+    // Handle certificate file
+    if (req.file) {
+        metricData.certificateUrl = `/uploads/certificates/${req.file.filename}`;
+        metricData.certificatePath = req.file.path;
+    }
+
+    const metric = await batchService.addQualityMetric(id, metricData);
 
     res.status(201).json(new ApiResponse(201, metric, "Quality metric added successfully"));
 });

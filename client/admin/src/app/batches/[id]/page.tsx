@@ -128,8 +128,8 @@ export default function BatchDetailPage() {
                                     {canAddCertification && (
                                         <DropdownMenuItem onClick={() => setShowCertForm(true)}>Add Certification</DropdownMenuItem>
                                     )}
-                                    <DropdownMenuItem onClick={() => setShowQrDialog(true)}>Add Quality Report</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { }}>Generate QR Code</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setShowQualityForm(true)}>Add Quality Report</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setShowQrDialog(true)}>Generate QR Code</DropdownMenuItem>
                                     {userRole === 'admin' && (
                                         <DropdownMenuItem className="text-red-600">Delete Batch</DropdownMenuItem>
                                     )}

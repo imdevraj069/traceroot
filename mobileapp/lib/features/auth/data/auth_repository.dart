@@ -20,7 +20,7 @@ class AuthRepository {
       );
       return AuthResponse.fromJson(response.data);
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -29,7 +29,7 @@ class AuthRepository {
       final response = await _dio.get('/auth/profile');
       return User.fromJson(response.data);
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 }

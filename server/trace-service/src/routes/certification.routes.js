@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as certController from '../controllers/certification.controller.js';
 import { verifyToken, optionalAuth } from '../middlewares/auth.middleware.js';
 import { requireRole, isAdmin } from '../middlewares/rbac.middleware.js';
+import { uploadCertificate } from '../middlewares/upload.middleware.js';
 
 const router = Router();
 
@@ -21,7 +22,7 @@ router.get('/expiring', certController.getExpiringCertifications);
 router.get('/:id', certController.getCertificationById);
 
 // Create certification (admin/manufacturer only)
-router.post('/', requireRole(['admin', 'manufacturer']), certController.createCertification);
+router.post('/', requireRole(['admin', 'manufacturer']), uploadCertificate.single('certificate'), certController.createCertification);
 
 // Update certification (admin/manufacturer only)
 router.put('/:id', requireRole(['admin', 'manufacturer']), certController.updateCertification);

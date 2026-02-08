@@ -104,7 +104,7 @@ class _UpdateBatchStatusDialogState
         mainAxisSize: MainAxisSize.min,
         children: [
           DropdownButtonFormField<String>(
-            value: _statuses.contains(_selectedStatus) ? _selectedStatus : null,
+            initialValue: _statuses.contains(_selectedStatus) ? _selectedStatus : null,
             items: _statuses
                 .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                 .toList(),

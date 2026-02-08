@@ -152,6 +152,16 @@ export const addQualityMetric = async (batchId, data) => {
         throw new ApiError(404, "Batch not found");
     }
 
+    // Auto-generate report number if not provided
+    if (!data.reportNumber) {
+        data.reportNumber = `RPT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    }
+
+    // Assign file URL if uploaded
+    if (data.certificateUrl) {
+        data.reportUrl = data.certificateUrl;
+    }
+
     const metric = await QualityMetric.create({
         batchId,
         ...data

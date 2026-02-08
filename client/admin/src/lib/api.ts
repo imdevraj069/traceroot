@@ -105,9 +105,16 @@ export const batches = {
         const res = await traceApi.put(`/api/batches/${id}/status`, data);
         return res.data;
     },
-    addQuality: async (id: string, data: QualityMetricData) => {
-        const res = await traceApi.post(`/api/batches/${id}/quality`, data);
-        return res.data;
+    addQuality: async (id: string, data: QualityMetricData | FormData) => {
+        if (data instanceof FormData) {
+            const res = await traceApi.post(`/api/batches/${id}/quality`, data, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return res.data;
+        } else {
+            const res = await traceApi.post(`/api/batches/${id}/quality`, data);
+            return res.data;
+        }
     },
     addCertification: async (id: string, data: CertificationData) => {
         const res = await traceApi.post(`/api/batches/${id}/certifications`, data);
