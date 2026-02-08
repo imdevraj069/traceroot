@@ -59,6 +59,16 @@ const batchSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    // For batch splitting/distribution
+    parentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Batch',
+        default: null
+    },
+    isDistributed: {
+        type: Boolean,
+        default: false
+    },
     status: {
         type: String,
         enum: [

@@ -30,12 +30,26 @@ export const createBatch = asyncHandler(async (req, res) => {
 export const getAllBatches = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, status } = req.query;
 
-    // Allow admin, supplier, manufacturer, and distributor to see all batches
-    // Other roles only see batches they created
-    const canViewAll = ['admin', 'supplier', 'manufacturer', 'distributor', 'retailer'].includes(req.user.role);
-    const userId = canViewAll ? null : req.user.id;
+    // Allow admin, supplier, manufacturer to see all (or filtered by create)
+    // Distributors see all? 
+    // Retailers see batches at their location
+    // Consumers sees nothing here? (Consumers usually use public trace)
+    
+    let userId = null;
+    let location = null;
 
-    const batches = await batchService.getAllBatches({ page, limit, status, userId });
+    if (req.user.role === 'retailer') {
+        location = req.user.location;
+    } else if (['admin', 'supplier', 'manufacturer', 'distributor'].includes(req.user.role)) {
+        // Can view all, or maybe restrict by userId if needed?
+        // Existing logic was: if not in list, use userId.
+        // Let's keep it simple: Admin/Supplier/Manufacturer/Distributor see all.
+        // Others (e.g. farmers?) only see what they created.
+    } else {
+        userId = req.user.id;
+    }
+
+    const batches = await batchService.getAllBatches({ page, limit, status, userId, location });
 
     res.status(200).json(new ApiResponse(200, batches, "Batches fetched successfully"));
 });
@@ -121,6 +135,19 @@ export const updateBatchStatus = asyncHandler(async (req, res) => {
     });
 
     res.status(200).json(new ApiResponse(200, batch, "Batch status updated successfully"));
+});
+
+export const distributeBatch = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { distributions } = req.body;
+
+    if (!distributions || !Array.isArray(distributions)) {
+        throw new ApiError(400, "Distributions array is required");
+    }
+
+    const result = await batchService.distributeBatch(id, distributions, req.user.id);
+
+    res.status(200).json(new ApiResponse(200, result, "Batch distributed successfully"));
 });
 
 // QR Code Generation

@@ -15,7 +15,13 @@ const REFRESH_TOKEN_EXPIRES_DAYS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_DA
 // Generate access token
 const generateAccessToken = (user) => {
     return jwt.sign(
-        { id: user._id, email: user.email, role: user.role },
+        { 
+            id: user._id, 
+            email: user.email, 
+            role: user.role,
+            location: user.location,
+            organization: user.organization 
+        },
         JWT_SECRET,
         { expiresIn: JWT_EXPIRES_IN }
     );
@@ -42,7 +48,7 @@ export const getClientIp = (req) => {
 };
 
 // Register user
-export const registerUser = async ({ email, password, name, role = 'user' }, ipAddress) => {
+export const registerUser = async ({ email, password, name, role = 'user', location, organization }, ipAddress) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
         throw new ApiError(409, "User with this email already exists");
@@ -55,7 +61,9 @@ export const registerUser = async ({ email, password, name, role = 'user' }, ipA
         email,
         password: hashedPassword,
         name,
-        role
+        role,
+        location,
+        organization
     });
 
     const accessToken = generateAccessToken(user);

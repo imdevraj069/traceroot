@@ -37,6 +37,9 @@ router.get('/:id/timeline', verifyToken, batchController.getBatchTimeline);
 // PUT /api/batches/:id/status - Update batch status (distributors, retailers, admins)
 router.put('/:id/status', verifyToken, requireRole(['admin', 'distributor', 'retailer']), batchController.updateBatchStatus);
 
+// POST /api/batches/:id/distribute - Distribute batch to multiple locations
+router.post('/:id/distribute', verifyToken, requireRole(['admin', 'manufacturer', 'distributor']), batchController.distributeBatch);
+
 // ==================== QR Code Routes ====================
 
 // GET /api/batches/:id/qr - Generate QR code for batch

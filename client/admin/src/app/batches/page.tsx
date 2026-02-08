@@ -24,7 +24,15 @@ export default function BatchesPage() {
         try {
             setLoading(true);
             const result = await batches.getAll({ status: filter || undefined });
-            setData(result.data?.batches || []);
+            let batchList = result.data?.batches || [];
+
+            // Filter for Retailers/Distributors to only show batches relevant to them?
+            // Assuming the backend returns all batches, let's filter purely based on role if needed
+            // But currently the requirement says "Retailers can see the products delivered to their places"
+            // If the backend doesn't filter, we might see everything.
+            // Ideally backend should filter.
+            
+            setData(batchList);
         } catch (error) {
             console.error('Failed to fetch batches:', error);
         } finally {

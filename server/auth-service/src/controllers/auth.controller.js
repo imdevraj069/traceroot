@@ -7,7 +7,7 @@ import * as authService from '../services/auth.service.js';
 const getIp = (req) => authService.getClientIp(req);
 
 export const register = asyncHandler(async (req, res) => {
-    const { email, password, name, role } = req.body;
+    const { email, password, name, role, location, organization } = req.body;
 
     if (!email || !password || !name) {
         throw new ApiError(400, "Email, password, and name are required");
@@ -17,7 +17,7 @@ export const register = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Password must be at least 6 characters");
     }
 
-    const result = await authService.registerUser({ email, password, name, role }, getIp(req));
+    const result = await authService.registerUser({ email, password, name, role, location, organization }, getIp(req));
 
     res.status(201).json(new ApiResponse(201, result, "User registered successfully"));
 });

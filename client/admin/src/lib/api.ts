@@ -105,6 +105,10 @@ export const batches = {
         const res = await traceApi.put(`/api/batches/${id}/status`, data);
         return res.data;
     },
+    distribute: async (id: string, distributions: { location: string; quantity: number }[]) => {
+        const res = await traceApi.post(`/api/batches/${id}/distribute`, { distributions });
+        return res.data;
+    },
     addQuality: async (id: string, data: QualityMetricData | FormData) => {
         if (data instanceof FormData) {
             const res = await traceApi.post(`/api/batches/${id}/quality`, data, {
@@ -190,6 +194,8 @@ export interface Batch {
     qualityMetrics?: QualityMetric[];
     statusHistory?: StatusHistory[];
     certifications?: Certification[];
+    isDistributed?: boolean;
+    parentId?: string;
 }
 
 export interface Certification {

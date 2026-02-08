@@ -18,10 +18,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Eye, Edit, Trash2, MapPin } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Trash2, MapPin, Share2 } from 'lucide-react';
 import { Batch } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { batches } from '@/lib/api';
+import { DistributeBatchDialog } from './DistributeBatchDialog';
 
 interface BatchTableProps {
     data: Batch[];
@@ -40,6 +41,7 @@ const statusColors: Record<string, string> = {
 export function BatchTable({ data, onRefresh }: BatchTableProps) {
     const router = useRouter();
     const [loadingId, setLoadingId] = useState<string | null>(null);
+    const [distributeBatch, setDistributeBatch] = useState<Batch | null>(null);
 
     const handleDelete = async (id: string) => {
         if (confirm('Are you sure you want to delete this batch?')) {
@@ -115,6 +117,12 @@ export function BatchTable({ data, onRefresh }: BatchTableProps) {
                                                 <Edit className="mr-2 h-4 w-4" />
                                                 Edit Batch
                                             </DropdownMenuItem>
+                                            {!batch.isDistributed && (
+                                                <DropdownMenuItem onClick={() => setDistributeBatch(batch)}>
+                                                    <Share2 className="mr-2 h-4 w-4" />
+                                                    Distribute
+                                                </DropdownMenuItem>
+                                            )}
                                             <DropdownMenuItem
                                                 className="text-red-600 focus:text-red-600"
                                                 onClick={() => handleDelete(batch._id)}
@@ -130,6 +138,19 @@ export function BatchTable({ data, onRefresh }: BatchTableProps) {
                     )}
                 </TableBody>
             </Table>
+
+            {distributeBatch && (
+                <DistributeBatchDialog 
+                    batchId={distributeBatch._id}
+                    maxQuantity={distributeBatch.quantity}
+                    isOpen={!!distributeBatch}
+                    onClose={() => setDistributeBatch(null)}
+                    onSuccess={() => {
+                        setDistributeBatch(null);
+                        onRefresh();
+                    }}
+                />
+            )}
         </div>
     );
 }

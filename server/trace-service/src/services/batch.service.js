@@ -68,11 +68,12 @@ export const createBatch = async (data) => {
     return batch;
 };
 
-export const getAllBatches = async ({ page, limit, status, userId }) => {
+export const getAllBatches = async ({ page, limit, status, userId, location }) => {
     const query = {};
 
     if (status) query.status = status;
     if (userId) query.createdBy = userId;
+    if (location) query.currentLocation = location;
 
     const skip = (page - 1) * limit;
 
@@ -128,6 +129,87 @@ export const updateBatch = async (id, updates, userId, userRole) => {
     await batch.save();
 
     return batch;
+};
+
+export const distributeBatch = async (batchId, distributions, userId) => {
+    const parentBatch = await Batch.findById(batchId);
+
+    if (!parentBatch) {
+        throw new ApiError(404, "Batch not found");
+    }
+
+    if (parentBatch.isDistributed) {
+        throw new ApiError(400, "Batch is already distributed");
+    }
+
+    // Validate total quantity
+    const totalDistributed = distributions.reduce((sum, item) => sum + Number(item.quantity), 0);
+    if (totalDistributed > parentBatch.quantity) {
+        throw new ApiError(400, `Total distributed quantity (${totalDistributed}) exceeds available batch quantity (${parentBatch.quantity})`);
+    }
+
+    const createdBatches = [];
+
+    // Process each distribution
+    for (let i = 0; i < distributions.length; i++) {
+        const dist = distributions[i];
+        
+        // Generate child batch ID
+        const childBatchId = `${parentBatch.batchId}-D${i + 1}`;
+        const childBatchNumber = `${parentBatch.batchNumber}-${i + 1}`;
+
+        // Create child batch
+        const childBatch = await Batch.create({
+            batchId: childBatchId,
+            batchNumber: childBatchNumber,
+            productName: dist.productName || parentBatch.productName,
+            variety: parentBatch.variety,
+            quantity: dist.quantity,
+            unit: parentBatch.unit,
+            origin: parentBatch.origin,
+            currentLocation: dist.location,
+            status: 'In Distribution',
+            harvestDate: parentBatch.harvestDate,
+            expiryDate: parentBatch.expiryDate,
+            quality: parentBatch.quality,
+            parentId: parentBatch._id,
+            createdBy: userId, // The person distributing becomes the creator of the child record contextually
+        });
+
+        // Copy history + add distribution event
+        const parentHistory = await StatusHistory.find({ batchId: parentBatch._id });
+        
+        // Clone history for child (optional, but good for traceability on child view)
+        // Or just link references. Here we'll just add the "Distributed from" event.
+        
+        await StatusHistory.create({
+            batchId: childBatch._id,
+            status: 'In Distribution',
+            location: dist.location,
+            notes: `received from batch ${parentBatch.batchNumber}`,
+            updatedBy: userId
+        });
+
+        createdBatches.push(childBatch);
+    }
+
+    // Update parent
+    parentBatch.isDistributed = true;
+    parentBatch.status = 'Distributed'; // Or keep it as is, but mark flag
+    parentBatch.quantity = parentBatch.quantity - totalDistributed; // Optionally reduce or keep as record
+    // Usually in supply chain, if fully distributed, quantity becomes 0 or it's just marked distributed.
+    // Let's mark it distributed and keep original quantity as record of what IT had.
+    
+    await parentBatch.save();
+    
+    await StatusHistory.create({
+        batchId: parentBatch._id,
+        status: 'Distributed',
+        notes: `Batch split into ${createdBatches.length} sub-batches`,
+        updatedBy: userId
+    });
+
+    return createdBatches;
 };
 
 export const deleteBatch = async (id, userId, userRole) => {
