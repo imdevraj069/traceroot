@@ -37,19 +37,20 @@ export const getAllBatches = asyncHandler(async (req, res) => {
     
     let userId = null;
     let location = null;
+    let hasParent = undefined;
 
     if (req.user.role === 'retailer') {
         location = req.user.location;
-    } else if (['admin', 'supplier', 'manufacturer', 'distributor'].includes(req.user.role)) {
-        // Can view all, or maybe restrict by userId if needed?
-        // Existing logic was: if not in list, use userId.
-        // Let's keep it simple: Admin/Supplier/Manufacturer/Distributor see all.
-        // Others (e.g. farmers?) only see what they created.
+    } else if (req.user.role === 'distributor') {
+        // Distributors only see units in distribution (batches that have a parent)
+        hasParent = true;
+    } else if (['admin', 'supplier', 'manufacturer'].includes(req.user.role)) {
+        // Can view all
     } else {
         userId = req.user.id;
     }
 
-    const batches = await batchService.getAllBatches({ page, limit, status, userId, location });
+    const batches = await batchService.getAllBatches({ page, limit, status, userId, location, hasParent });
 
     res.status(200).json(new ApiResponse(200, batches, "Batches fetched successfully"));
 });

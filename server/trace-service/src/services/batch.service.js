@@ -68,12 +68,14 @@ export const createBatch = async (data) => {
     return batch;
 };
 
-export const getAllBatches = async ({ page, limit, status, userId, location }) => {
+export const getAllBatches = async ({ page, limit, status, userId, location, hasParent }) => {
     const query = {};
 
     if (status) query.status = status;
     if (userId) query.createdBy = userId;
     if (location) query.currentLocation = location;
+    if (hasParent === true) query.parentId = { $ne: null };
+    if (hasParent === false) query.parentId = null;
 
     const skip = (page - 1) * limit;
 
@@ -100,9 +102,30 @@ export const getBatchById = async (id) => {
         throw new ApiError(404, "Batch not found");
     }
 
-    const qualityMetrics = await QualityMetric.find({ batchId: id }).sort({ createdAt: -1 });
-    const statusHistory = await StatusHistory.find({ batchId: id }).sort({ createdAt: -1 });
-    const certifications = await Certification.find({ batchId: id }).sort({ createdAt: -1 });
+    // Collect all related batch IDs (current + ancestors)
+    const batchIds = [batch._id];
+    let currentBatch = batch;
+    
+    // Traverse up the parent chain
+    while (currentBatch.parentId) {
+        // Prevent infinite loops in case of circular references
+        if (batchIds.some(existingId => existingId.toString() === currentBatch.parentId.toString())) {
+            break;
+        }
+
+        const parent = await Batch.findById(currentBatch.parentId);
+        if (parent) {
+            batchIds.push(parent._id);
+            currentBatch = parent;
+        } else {
+            break;
+        }
+    }
+
+    // Fetch related data for ALL batches in the chain
+    const qualityMetrics = await QualityMetric.find({ batchId: { $in: batchIds } }).sort({ createdAt: -1 });
+    const statusHistory = await StatusHistory.find({ batchId: { $in: batchIds } }).sort({ createdAt: -1 });
+    const certifications = await Certification.find({ batchId: { $in: batchIds } }).sort({ createdAt: -1 });
 
     return { ...batch.toObject(), qualityMetrics, statusHistory, certifications };
 };
