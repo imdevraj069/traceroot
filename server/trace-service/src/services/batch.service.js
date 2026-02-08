@@ -319,12 +319,14 @@ export const getPublicBatchInfo = async (batchId) => {
     }
 
     const qualityMetrics = await QualityMetric.find({ batchId: batch._id }).select('-inspectorId');
+    const certifications = await Certification.find({ batchId: batch._id });
     const timeline = await getBatchTimeline(batch._id);
     const progress = calculateProgress(batch.status);
 
     return {
         batch,
         qualityMetrics,
+        certifications,
         timeline,
         progress,
         verified: true

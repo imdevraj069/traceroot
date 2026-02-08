@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Sidebar } from '@/components/Sidebar';
 import { DashboardHeader } from '@/components/DashboardHeader';
 import { useAuthStore } from '@/store/auth-store';
-import { batches, Batch, QualityMetric } from '@/lib/api';
+import { batches, Batch, QualityMetric, API_BASE_URLS } from '@/lib/api';
 import {
     ArrowLeft,
     Loader2,
@@ -16,7 +16,9 @@ import {
     FileText,
     MoreVertical,
     Flag,
-    Navigation
+    Navigation,
+    Plus,
+    Award
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -296,14 +298,102 @@ export default function BatchDetailPage() {
                         <TabsContent value="documents">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Documents</CardTitle>
-                                    <CardDescription>Certifications and compliance documents</CardDescription>
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <CardTitle>Documents</CardTitle>
+                                            <CardDescription>Certifications and compliance documents</CardDescription>
+                                        </div>
+                                        {canAddCertification && (
+                                            <Button size="sm" onClick={() => setShowCertForm(true)}>
+                                                <Plus className="w-4 h-4 mr-2" />
+                                                Add Certificate
+                                            </Button>
+                                        )}
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-center py-10 text-gray-500">
-                                        <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                                        <p>No documents available for this batch yet.</p>
-                                    </div>
+                                    {((batch.certifications && batch.certifications.length > 0) || (batch.qualityMetrics && batch.qualityMetrics.some(m => m.certificateUrl))) ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {/* Certifications */}
+                                            {batch.certifications?.map((cert) => (
+                                                <div key={cert._id} className="border rounded-lg p-4 flex flex-col justify-between hover:shadow-sm transition-shadow">
+                                                    <div>
+                                                        <div className="flex items-start justify-between mb-2">
+                                                            <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+                                                                <Award className="w-6 h-6" />
+                                                            </div>
+                                                            <Badge variant={cert.active ? "default" : "secondary"}>
+                                                                {cert.active ? 'Active' : 'Inactive'}
+                                                            </Badge>
+                                                        </div>
+                                                        <h4 className="font-semibold text-lg">{cert.name}</h4>
+                                                        <p className="text-sm text-gray-500 mb-1">{cert.issuingBody}</p>
+                                                        {cert.certificateNumber && (
+                                                            <p className="text-xs text-gray-400 font-mono mb-2">#{cert.certificateNumber}</p>
+                                                        )}
+                                                        <div className="text-xs text-gray-500">
+                                                            Issued: {cert.issuedDate ? formatDate(cert.issuedDate) : 'N/A'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="mt-4 pt-3 border-t">
+                                                        {cert.documentUrl ? (
+                                                            <a 
+                                                                href={`${API_BASE_URLS.trace}${cert.documentUrl}`} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer"
+                                                                className="text-sm text-blue-600 hover:text-blue-800 flex items-center font-medium"
+                                                            >
+                                                                <FileText className="w-4 h-4 mr-2" />
+                                                                View Certificate
+                                                            </a>
+                                                        ) : (
+                                                            <span className="text-sm text-gray-400 italic">No document file</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            {/* Quality Report Certificates */}
+                                            {batch.qualityMetrics?.filter(m => m.certificateUrl).map((metric) => (
+                                                <div key={`qm-${metric._id}`} className="border rounded-lg p-4 flex flex-col justify-between hover:shadow-sm transition-shadow">
+                                                    <div>
+                                                        <div className="flex items-start justify-between mb-2">
+                                                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                                                <Shield className="w-6 h-6" />
+                                                            </div>
+                                                            <Badge variant={metric.status === 'Passed' ? "default" : "destructive"}>
+                                                                {metric.status}
+                                                            </Badge>
+                                                        </div>
+                                                        <h4 className="font-semibold text-lg">{metric.metricType} Report</h4>
+                                                        <p className="text-sm text-gray-500 mb-1">{metric.labName || 'Internal Lab'}</p>
+                                                        {metric.reportNumber && (
+                                                            <p className="text-xs text-gray-400 font-mono mb-2">Rep #{metric.reportNumber}</p>
+                                                        )}
+                                                    </div>
+                                                    <div className="mt-4 pt-3 border-t">
+                                                        <a 
+                                                            href={`${API_BASE_URLS.trace}${metric.certificateUrl}`} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer"
+                                                            className="text-sm text-blue-600 hover:text-blue-800 flex items-center font-medium"
+                                                        >
+                                                            <FileText className="w-4 h-4 mr-2" />
+                                                            View Report
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-10 text-gray-500">
+                                            <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                                            <p>No documents available for this batch yet.</p>
+                                            {canAddCertification && (
+                                                <Button variant="outline" className="mt-4" onClick={() => setShowCertForm(true)}>Add Certification</Button>
+                                            )}
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </TabsContent>

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API Base URLs
-const API_BASE_URLS = {
+export const API_BASE_URLS = {
     auth: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:8001',
     trace: process.env.NEXT_PUBLIC_TRACE_URL || 'http://localhost:8002',
     blockchain: process.env.NEXT_PUBLIC_BLOCKCHAIN_URL || 'http://localhost:8003',
@@ -78,6 +78,8 @@ export interface QualityMetric {
     labName?: string;
     testMethod?: string;
     reportNumber?: string;
+    certificateUrl?: string;
+    metricType?: string;
 }
 
 export interface Certification {
@@ -86,6 +88,9 @@ export interface Certification {
     active: boolean;
     issuingBody?: string;
     expiryDate?: string;
+    documentUrl?: string;
+    certificateNumber?: string;
+    issuedDate?: string;
 }
 
 export interface TimelineEvent {
@@ -99,6 +104,7 @@ export interface TimelineEvent {
 export interface VerificationResult {
     batch: Batch;
     qualityMetrics: QualityMetric[];
+    certifications?: Certification[];
     timeline: TimelineEvent[];
     progress: number;
     verified: boolean;

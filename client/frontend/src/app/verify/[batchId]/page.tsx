@@ -90,6 +90,7 @@ export default function BatchDetailPage() {
                         <BatchVerification
                             batch={data.batch}
                             qualityMetrics={data.qualityMetrics}
+                            certifications={data.certifications}
                             progress={data.progress}
                             verified={data.verified}
                         />

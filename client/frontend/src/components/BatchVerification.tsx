@@ -1,6 +1,6 @@
 'use client';
 
-import { Batch, QualityMetric, Certification } from '@/lib/api';
+import { Batch, QualityMetric, Certification, API_BASE_URLS } from '@/lib/api';
 import {
     Package,
     MapPin,
@@ -11,12 +11,15 @@ import {
     Leaf,
     Shield,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    FileText,
+    Award
 } from 'lucide-react';
 
 interface Props {
     batch: Batch;
     qualityMetrics: QualityMetric[];
+    certifications?: Certification[];
     progress: number;
     verified: boolean;
 }
@@ -27,7 +30,7 @@ const qualityColors: Record<string, string> = {
     'Economy': 'bg-gray-100 text-gray-700',
 };
 
-export function BatchVerification({ batch, qualityMetrics, progress, verified }: Props) {
+export function BatchVerification({ batch, qualityMetrics, certifications, progress, verified }: Props) {
     return (
         <div className="space-y-6">
             {/* Verification Badge */}
@@ -122,6 +125,59 @@ export function BatchVerification({ batch, qualityMetrics, progress, verified }:
                                         {metric.status}
                                     </span>
                                 </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Documents & Certifications */}
+            {((certifications && certifications.length > 0) || (qualityMetrics.some(m => m.certificateUrl))) && (
+                <div className="bg-white border rounded-xl p-6">
+                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                        Documents & Certifications
+                    </h3>
+                    <div className="space-y-3">
+                        {certifications?.map((cert, index) => (
+                            <div key={`cert-${index}`} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                <div className="flex items-start gap-3">
+                                    <Award className="w-5 h-5 text-blue-600 mt-1" />
+                                    <div>
+                                        <p className="font-medium text-gray-900">{cert.name}</p>
+                                        <p className="text-xs text-gray-500">{cert.issuingBody || 'Certified'}</p>
+                                    </div>
+                                </div>
+                                {cert.documentUrl && (
+                                    <a 
+                                        href={`${API_BASE_URLS.trace}${cert.documentUrl}`} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-sm font-medium text-blue-600 hover:text-blue-800 underline"
+                                    >
+                                        View
+                                    </a>
+                                )}
+                            </div>
+                        ))}
+                        
+                        {qualityMetrics.filter(m => m.certificateUrl).map((metric, index) => (
+                            <div key={`qm-doc-${index}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <div className="flex items-start gap-3">
+                                    <Shield className="w-5 h-5 text-gray-600 mt-1" />
+                                    <div>
+                                        <p className="font-medium text-gray-900">{metric.metricType || metric.category} Report</p>
+                                        <p className="text-xs text-gray-500">Quality Check</p>
+                                    </div>
+                                </div>
+                                <a 
+                                    href={`${API_BASE_URLS.trace}${metric.certificateUrl}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-sm font-medium text-blue-600 hover:text-blue-800 underline"
+                                >
+                                    View
+                                </a>
                             </div>
                         ))}
                     </div>

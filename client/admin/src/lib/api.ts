@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API Base URLs
-const API_BASE_URLS = {
+export const API_BASE_URLS = {
     auth: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:8001',
     trace: process.env.NEXT_PUBLIC_TRACE_URL || 'http://localhost:8002',
     blockchain: process.env.NEXT_PUBLIC_BLOCKCHAIN_URL || 'http://localhost:8003',
