@@ -10,6 +10,11 @@ import * as certificationService from '../services/certification.service.js';
 export const createCertification = asyncHandler(async (req, res) => {
     const userId = req.user?.id;
 
+    // Add document URL if file uploaded
+    if (req.file) {
+        req.body.documentUrl = `/uploads/certificates/${req.file.filename}`;
+    }
+
     const certification = await certificationService.createCertification(req.body, userId);
 
     res.status(201).json(new ApiResponse(201, certification, 'Certification created successfully'));

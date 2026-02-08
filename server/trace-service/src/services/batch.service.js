@@ -1,6 +1,7 @@
 import Batch from '../models/batch.model.js';
 import QualityMetric from '../models/qualityMetric.model.js';
 import StatusHistory from '../models/statusHistory.model.js';
+import Certification from '../models/certification.model.js';
 import ApiError from '../utils/ApiError.js';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
@@ -100,8 +101,9 @@ export const getBatchById = async (id) => {
 
     const qualityMetrics = await QualityMetric.find({ batchId: id }).sort({ createdAt: -1 });
     const statusHistory = await StatusHistory.find({ batchId: id }).sort({ createdAt: -1 });
+    const certifications = await Certification.find({ batchId: id }).sort({ createdAt: -1 });
 
-    return { ...batch.toObject(), qualityMetrics, statusHistory };
+    return { ...batch.toObject(), qualityMetrics, statusHistory, certifications };
 };
 
 export const updateBatch = async (id, updates, userId, userRole) => {

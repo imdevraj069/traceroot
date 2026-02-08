@@ -140,7 +140,13 @@ export const certifications = {
         const res = await traceApi.get('/api/certifications/active');
         return res.data;
     },
-    create: async (data: CertificationData) => {
+    create: async (data: CertificationData | FormData) => {
+        if (data instanceof FormData) {
+            const res = await traceApi.post('/api/certifications', data, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return res.data;
+        }
         const res = await traceApi.post('/api/certifications', data);
         return res.data;
     },
@@ -183,6 +189,23 @@ export interface Batch {
     updatedAt: string;
     qualityMetrics?: QualityMetric[];
     statusHistory?: StatusHistory[];
+    certifications?: Certification[];
+}
+
+export interface Certification {
+    _id: string;
+    name: string;
+    active: boolean;
+    issuedDate?: string;
+    expiryDate?: string;
+    issuingBody?: string;
+    certificateNumber?: string;
+    documentUrl?: string;
+    type: string;
+    scope?: string;
+    batchId?: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface CreateBatchData {
