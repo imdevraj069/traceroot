@@ -362,29 +362,60 @@ export const getBatchTimeline = async (id) => {
         throw new ApiError(404, "Batch not found");
     }
 
-    const statusHistory = await StatusHistory.find({ batchId: id }).sort({ createdAt: 1 });
-    const qualityMetrics = await QualityMetric.find({ batchId: id }).sort({ createdAt: 1 });
+    // Collect all related batch IDs (current + ancestors)
+    const batchIds = [batch._id];
+    let currentBatch = batch;
+    
+    // Traverse up the parent chain
+    while (currentBatch.parentId) {
+        // Prevent infinite loops
+        if (batchIds.some(existingId => existingId.toString() === currentBatch.parentId.toString())) {
+            break;
+        }
+
+        const parent = await Batch.findById(currentBatch.parentId);
+        if (parent) {
+            batchIds.push(parent._id);
+            currentBatch = parent;
+        } else {
+            break;
+        }
+    }
+
+    // Use batchIds for query
+    const statusHistory = await StatusHistory.find({ batchId: { $in: batchIds } })
+        .populate('batchId', 'batchNumber')
+        .sort({ createdAt: 1 });
+    const qualityMetrics = await QualityMetric.find({ batchId: { $in: batchIds } })
+        .populate('batchId', 'batchNumber')
+        .sort({ createdAt: 1 });
 
     const timeline = [];
 
     // Add status changes to timeline
     statusHistory.forEach(history => {
+        const isCurrentBatch = history.batchId && history.batchId._id.toString() === id.toString();
+        const batchLabel = (!isCurrentBatch && history.batchId) ? ` (Parent Batch: ${history.batchId.batchNumber})` : '';
+
         timeline.push({
             type: 'status_change',
             event: history.status,
             timestamp: history.createdAt,
             location: history.location,
-            description: history.notes || `Status changed to ${history.status}`
+            description: (history.notes || `Status changed to ${history.status}`) + batchLabel
         });
     });
 
     // Add quality metrics to timeline
     qualityMetrics.forEach(metric => {
+        const isCurrentBatch = metric.batchId && metric.batchId._id.toString() === id.toString();
+        const batchLabel = (!isCurrentBatch && metric.batchId) ? ` (Parent Batch: ${metric.batchId.batchNumber})` : '';
+
         timeline.push({
             type: 'quality_check',
             event: 'Quality Check',
             timestamp: metric.createdAt,
-            description: `${metric.metricType}: ${metric.value} ${metric.unit || ''}`
+            description: `${metric.category} Check - Status: ${metric.status}${batchLabel}`
         });
     });
 
