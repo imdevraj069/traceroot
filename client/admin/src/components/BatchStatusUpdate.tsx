@@ -49,6 +49,7 @@ export function BatchStatusUpdate({ batchId, currentStatus, onSuccess }: BatchSt
     const { user } = useAuthStore()
     const [newStatus, setNewStatus] = useState(currentStatus)
     const [location, setLocation] = useState("")
+    const [productName, setProductName] = useState("")
     const [notes, setNotes] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
@@ -73,7 +74,7 @@ export function BatchStatusUpdate({ batchId, currentStatus, onSuccess }: BatchSt
     }
 
     const handleUpdateStatus = async () => {
-        if (newStatus === currentStatus && !location && !notes) {
+        if (newStatus === currentStatus && !location && !notes && !productName) {
             setMessage({ type: "error", text: "Please make changes before updating" })
             return
         }
@@ -83,12 +84,14 @@ export function BatchStatusUpdate({ batchId, currentStatus, onSuccess }: BatchSt
             await batches.updateStatus(batchId, {
                 status: newStatus,
                 location: location || undefined,
-                notes: notes || undefined
+                notes: notes || undefined,
+                productName: productName || undefined
             })
             setMessage({ type: "success", text: "Status updated successfully" })
             setTimeout(() => {
                 setMessage(null)
                 onSuccess()
+                setProductName("") // Reset
             }, 2000)
         } catch (error) {
             console.error("Failed to update status:", error)
@@ -141,7 +144,19 @@ export function BatchStatusUpdate({ batchId, currentStatus, onSuccess }: BatchSt
                         placeholder="e.g., Distribution Center A"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
+                        className="bg-white"
                     />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Product Name Transform (Optional)</label>
+                    <Input
+                        placeholder="e.g., Change 'Potato' to 'Potato Chips'"
+                        value={productName}
+                        onChange={(e) => setProductName(e.target.value)} 
+                        className="bg-white"
+                    />
+                    <p className="text-[10px] text-gray-500">Only when processing changes the product form.</p>
                 </div>
 
                 <div className="space-y-2">

@@ -101,7 +101,7 @@ export const batches = {
         const res = await traceApi.put(`/api/batches/${id}`, data);
         return res.data;
     },
-    updateStatus: async (id: string, data: { status: string; location?: string; notes?: string }) => {
+    updateStatus: async (id: string, data: { status: string; location?: string; notes?: string; productName?: string }) => {
         const res = await traceApi.put(`/api/batches/${id}/status`, data);
         return res.data;
     },

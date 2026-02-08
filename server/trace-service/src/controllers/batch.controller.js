@@ -106,7 +106,7 @@ export const getBatchTimeline = asyncHandler(async (req, res) => {
 
 export const updateBatchStatus = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { status, location, notes } = req.body;
+    const { status, location, notes, productName } = req.body;
 
     if (!status) {
         throw new ApiError(400, "Status is required");
@@ -116,6 +116,7 @@ export const updateBatchStatus = asyncHandler(async (req, res) => {
         status,
         location,
         notes,
+        productName,
         updatedBy: req.user.id
     });
 

@@ -203,7 +203,7 @@ export const addQualityMetric = async (batchId, data) => {
     return metric;
 };
 
-export const updateBatchStatus = async (id, { status, location, notes, updatedBy }) => {
+export const updateBatchStatus = async (id, { status, location, notes, productName, updatedBy }) => {
     if (!VALID_STATUSES.includes(status)) {
         throw new ApiError(400, `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`);
     }
@@ -216,6 +216,8 @@ export const updateBatchStatus = async (id, { status, location, notes, updatedBy
 
     batch.status = status;
     if (location) batch.currentLocation = location;
+    if (productName) batch.productName = productName;
+    
     await batch.save();
 
     // Record status change
@@ -223,7 +225,7 @@ export const updateBatchStatus = async (id, { status, location, notes, updatedBy
         batchId: batch._id,
         status,
         location,
-        notes,
+        notes: notes || (productName ? `Product renamed to ${productName}` : undefined),
         updatedBy
     });
 

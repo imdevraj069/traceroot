@@ -49,10 +49,13 @@ export default function BatchDetailPage() {
     const [showQrDialog, setShowQrDialog] = useState(false);
 
     // Role-based permissions
-    const userRole = user?.role || "";
-    const canAddQuality = userRole === 'admin' || userRole === 'manufacturer';
-    const canAddCertification = userRole === 'admin';
-    const canUpdateStatus = userRole === 'admin' || userRole === 'distributor' || userRole === 'retailer';
+    const userRole = user?.role?.toLowerCase() || "";
+    // Admin, Manufacturer, Inspector can add quality metrics
+    const canAddQuality = ['admin', 'manufacturer', 'inspector'].includes(userRole);
+    // Admin, Manufacturer can add certifications
+    const canAddCertification = ['admin', 'manufacturer'].includes(userRole);
+    // Manufacturer CANNOT update status as per requirements. Only Admin/Distributor/Retailer.
+    const canUpdateStatus = ['admin', 'distributor', 'retailer'].includes(userRole);
 
     useEffect(() => {
         checkAuth();
