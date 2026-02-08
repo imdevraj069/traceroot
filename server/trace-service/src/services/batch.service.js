@@ -195,7 +195,7 @@ export const distributeBatch = async (batchId, distributions, userId) => {
 
     // Update parent
     parentBatch.isDistributed = true;
-    parentBatch.status = 'Distributed'; // Or keep it as is, but mark flag
+    parentBatch.status = 'In Distribution'; // Or keep it as is, but mark flag
     parentBatch.quantity = parentBatch.quantity - totalDistributed; // Optionally reduce or keep as record
     // Usually in supply chain, if fully distributed, quantity becomes 0 or it's just marked distributed.
     // Let's mark it distributed and keep original quantity as record of what IT had.
@@ -204,7 +204,7 @@ export const distributeBatch = async (batchId, distributions, userId) => {
     
     await StatusHistory.create({
         batchId: parentBatch._id,
-        status: 'Distributed',
+        status: 'In Distribution',
         notes: `Batch split into ${createdBatches.length} sub-batches`,
         updatedBy: userId
     });
